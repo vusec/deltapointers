@@ -11,6 +11,7 @@ class DeltaTags(infra.Instance):
     llvm_patches = ['gold-plugins', 'statsfilter', 'aarch64-bugfix']
 
     llvm = LLVM(version=llvm_version, compiler_rt=False, patches=llvm_patches)
+                #build_flags=['-DLLVM_ENABLE_DOXYGEN=On'])
     shrinkaddrspace = ShrinkAddrSpace(addrspace_bits, srcdir='shrinkaddrspace')
     libdeltatags = LibDeltaTags(addrspace_bits, overflow_bit=True)
 
