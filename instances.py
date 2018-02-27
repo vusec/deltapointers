@@ -1,5 +1,6 @@
+import os.path
 import infra
-from infra.packages import LLVM, ShrinkAddrSpace
+from infra.packages import LLVM, BuiltinLLVMPasses, LLVMPasses, ShrinkAddrSpace
 from infra.instances.helpers.llvm_lto import add_lto_args, add_stats_pass
 #from infra.packages.llvm.helpers import add_lto_args, add_stats_pass
 from deps import LibDeltaTags
@@ -10,9 +11,13 @@ class DeltaTags(infra.Instance):
     llvm_version = '3.8.0'
     llvm_patches = ['gold-plugins', 'statsfilter', 'aarch64-bugfix']
 
-    llvm = LLVM(version=llvm_version, compiler_rt=False, patches=llvm_patches)
-                #build_flags=['-DLLVM_ENABLE_DOXYGEN=On'])
-    shrinkaddrspace = ShrinkAddrSpace(addrspace_bits, srcdir='shrinkaddrspace')
+    llvm = LLVM(version=llvm_version, compiler_rt=False, patches=llvm_patches,
+                build_flags=['-DLLVM_ENABLE_DOXYGEN=On'])
+    curdir = os.path.dirname(os.path.abspath(__file__))
+    llvm_passes = LLVMPasses(llvm, curdir + '/llvm-passes', 'deltatags',
+                             use_builtins=True)
+    shrinkaddrspace = ShrinkAddrSpace(addrspace_bits,
+                                      srcdir=curdir + '/shrinkaddrspace')
     libdeltatags = LibDeltaTags(addrspace_bits, overflow_bit=True)
 
     def __init__(self, name, overflow_check, optimize):
@@ -21,11 +26,15 @@ class DeltaTags(infra.Instance):
         self.optimize = optimize
 
     def dependencies(self):
-        return [self.llvm, self.shrinkaddrspace, self.libdeltatags]
+        yield self.llvm
+        yield self.llvm_passes
+        yield self.shrinkaddrspace
+        yield self.libdeltatags
 
     def configure(self, ctx):
         # helper libraries
         self.llvm.configure(ctx, lto=True)
+        self.llvm_passes.configure(ctx)
         self.shrinkaddrspace.configure(ctx, static=True)
         self.libdeltatags.configure(ctx)
 
