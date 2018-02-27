@@ -2,7 +2,7 @@
 import os.path
 import infra
 from instances import DeltaTags
-#from targets import DeltaTagsTest
+from targets import DeltaTagsTest
 
 setup = infra.Setup(os.path.dirname(__file__))
 
@@ -12,7 +12,7 @@ for instance in DeltaTags.make_instances():
     setup.add_instance(instance)
 
 setup.add_target(infra.targets.SPEC2006())
-#setup.add_target(DeltaTagsTest())
+setup.add_target(DeltaTagsTest())
 
 if __name__ == '__main__':
     setup.main()
