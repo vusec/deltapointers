@@ -16,9 +16,8 @@
 
 /* Replace call system mmap instead of metalloc mmap to avoid metapagetable
  * entries */
-#include "base/linux_syscall_support.h"
+#include "linux_syscall_support.h"
 
-#include "shrink.h"
 #include "shrink.h"
 
 /* Not defined in glibc */
