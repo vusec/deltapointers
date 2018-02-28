@@ -9,11 +9,16 @@ from deps import LibDeltaTags
 class DeltaTags(infra.Instance):
     addrspace_bits = 32
     llvm_version = '3.8.0'
-    llvm_patches = ['gold-plugins', 'statsfilter', 'aarch64-bugfix']
+    llvm_patches = ['gold-plugins', 'statsfilter']
 
-    llvm = LLVM(version=llvm_version, compiler_rt=False, patches=llvm_patches,
-                build_flags=['-DLLVM_ENABLE_DOXYGEN=On'])
     curdir = os.path.dirname(os.path.abspath(__file__))
+    doxygen_flags = [
+        #'-DLLVM_ENABLE_DOXYGEN=On',
+        #'-DLLVM_DOXYGEN_SVG=On',
+        #'-DLLVM_INSTALL_DOXYGEN_HTML_DIR=%s/build/doxygen' % curdir
+    ]
+    llvm = LLVM(version=llvm_version, compiler_rt=False,
+                patches=llvm_patches, build_flags=doxygen_flags)
     llvm_passes = LLVMPasses(llvm, curdir + '/llvm-passes', 'deltatags',
                              use_builtins=True)
     shrinkaddrspace = ShrinkAddrSpace(addrspace_bits,
