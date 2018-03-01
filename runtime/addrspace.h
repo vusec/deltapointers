@@ -1,0 +1,25 @@
+#ifndef _ADDRSPACE_H
+#define _ADDRSPACE_H
+
+#ifndef ADDRSPACE_BITS
+# define ADDRSPACE_BITS (32)
+#endif
+
+#define POINTER_BITS    (sizeof (void*) * 8)
+#define ADDRSPACE_MASK  ((1ULL << ADDRSPACE_BITS) - 1)
+#define BOUND_SHIFT     (ADDRSPACE_BITS)
+
+#ifdef OVERFLOW_BIT
+# define BOUND_BITS     (POINTER_BITS - BOUND_SHIFT - 1)
+# define OVERFLOW_MASK  (1ULL << (POINTER_BITS - 1))
+#else
+# define BOUND_BITS     (POINTER_BITS - BOUND_SHIFT)
+# define OVERFLOW_MASK  (0ULL)
+#endif
+
+#define BOUND_MASK_LOW  ((1ULL << BOUND_BITS) - 1)
+#define BOUND_MASK_HIGH (BOUND_MASK_LOW << BOUND_SHIFT)
+//#define PRESERVE_MASK   (~BOUND_MASK_HIGH)
+#define PRESERVE_MASK   (ADDRSPACE_MASK | OVERFLOW_MASK)
+
+#endif /* _ADDRSPACE_H */

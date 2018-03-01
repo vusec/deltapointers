@@ -23,7 +23,8 @@ class DeltaTags(infra.Instance):
                              use_builtins=True)
     shrinkaddrspace = ShrinkAddrSpace(addrspace_bits,
                                       srcdir=curdir + '/shrinkaddrspace')
-    libdeltatags = LibDeltaTags(addrspace_bits, overflow_bit=True)
+    libdeltatags = LibDeltaTags(llvm_passes, addrspace_bits, overflow_bit=True,
+                                runtime_stats=False, debug=False)
 
     def __init__(self, name, overflow_check, optimize):
         self.name = name
