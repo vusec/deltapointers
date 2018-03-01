@@ -2,7 +2,7 @@
 #define ADDRESS_SPACE_H
 
 #include <llvm/Support/CommandLine.h>
-#include <llvm/IR/Type.h>
+#include <llvm/IR/Module.h> // because <llvm/IR/Type.h> fails on LLVM 3.8.0
 
 extern llvm::cl::opt<unsigned> AddressSpaceBits;
 extern llvm::cl::opt<unsigned> PointerBits;  /* FIXME: better to get this from datalayout */

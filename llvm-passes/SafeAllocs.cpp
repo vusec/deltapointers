@@ -679,7 +679,7 @@ void SafeAllocs::propagateSafeTags() {
             case Instruction::GetElementPtr:
                 NSafeGEPs++;
                 NSafeGEPsProp++;
-                __attribute__((fallthrough));
+                /* fall through */
             case Instruction::BitCast:
             case Instruction::IntToPtr:
             case Instruction::PtrToInt:
@@ -811,7 +811,7 @@ bool SafeAllocs::findAllDereferencedBytes(Value *Ptr,
                 // dereference inbounds (fallthrough to the check otherwise)
                 if (!needsPropagation(cast<GetElementPtrInst>(E.UI)))
                     continue;
-                __attribute__((fallthrough));
+                /* fall through */
             default:
                 if (const SCEV *PtrOffset = getPointerCastOrArithOffset(E.UI, E.I)) {
                     if (PtrOffset->isZero()) {
