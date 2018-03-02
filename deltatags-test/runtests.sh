@@ -1,11 +1,11 @@
 #!/bin/bash
 set -euo pipefail
 
-[ $# -gt 2 ] && { echo "Usage: $0 [config-name] [run-wrapper]"; exit 1; }
+[ $# -gt 2 -o $# -lt 1 ] && { echo "Usage: $0 [config-name] [run-wrapper]"; exit 1; }
 
-suffix=""
+instance=""
 run_wrapper=""
-[ $# -ge 1 ] && suffix="-$1"
+[ $# -ge 1 ] && instance="$1"
 [ $# -eq 2 ] && run_wrapper="$2"
 
 # Determine directory that script is in, so it can be invoked from anywhere.
@@ -13,7 +13,7 @@ DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 cd "$DIR"
 
 fails=0
-bins=`make -s bins SUFFIX="$suffix"`
+bins=`make -s bins INSTANCE="$instance"`
 for b in $bins; do
     if [ ! -f "$b" ]; then
         echo "ERROR: Binary $b not found in build dir!"

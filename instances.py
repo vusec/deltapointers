@@ -26,10 +26,10 @@ class DeltaTags(infra.Instance):
     libdeltatags = LibDeltaTags(llvm_passes, addrspace_bits, overflow_bit=True,
                                 runtime_stats=False, debug=False)
 
-    def __init__(self, name, overflow_check, optimize):
+    def __init__(self, name, overflow_check, optimizer):
         self.name = name
         self.overflow_check = overflow_check
-        self.optimize = optimize
+        self.optimizer = optimizer
 
     def dependencies(self):
         yield self.llvm
@@ -53,9 +53,9 @@ class DeltaTags(infra.Instance):
         add_stats_pass(ctx, '-replace-address-taken-malloc')
 
         # do some analysis for optimizations
-        if self.optimize == 'old':
+        if self.optimizer == 'old':
             add_stats_pass(ctx, '-safe-allocs-old')
-        elif self.optimize == 'new':
+        elif self.optimizer == 'new':
             # simplify loops to ease analysis
             add_lto_args(ctx, '-loop-simplify')
             add_stats_pass(ctx, '-safe-allocs')
@@ -64,7 +64,8 @@ class DeltaTags(infra.Instance):
         add_stats_pass(ctx, '-find-reinterpreted-pointers')
 
         # tag heap/stack/global allocations
-        add_stats_pass(ctx, '-size-tag-alloc')
+        add_stats_pass(ctx, '-size-tag-alloc',
+                            '-address-space-bits', self.addrspace_bits)
 
         # propagate size tags on ptr arith and libc calls
         add_stats_pass(ctx, '-size-tag-prop',
@@ -75,7 +76,7 @@ class DeltaTags(infra.Instance):
                 '-mask-pointers-ignore-list=strtok')
 
         # undo loop simplification changes
-        if self.optimize == 'new':
+        if self.optimizer == 'new':
             add_lto_args(ctx, '-simplifycfg')
 
         # dump IR for debugging
@@ -86,6 +87,7 @@ class DeltaTags(infra.Instance):
 
     @classmethod
     def make_instances(cls):
+        # cls(name, overflow_check, optimizer)
         yield cls('deltatags', 'none', None)
         yield cls('deltatags-opt', 'none', 'old')
         yield cls('deltatags-corrupt', 'corrupt', None)

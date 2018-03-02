@@ -1,6 +1,6 @@
 import os
 from infra import Target
-from infra.util import run
+from infra.util import run, qjoin
 from instances import DeltaTags
 
 
@@ -17,13 +17,10 @@ class DeltaTagsTest(Target):
         os.symlink(os.path.join(ctx.paths.root, self.name), 'src')
 
     def build(self, ctx, instance):
-        self.run_make(ctx, instance, '-j%d' % ctx.jobs)
+        self.run_make(ctx, instance, '--always-make')
 
     def link(self, ctx, instance):
         pass
-
-    def clean(self, ctx, instance):
-        self.run_make(ctx, instance, 'clean')
 
     def binary_paths(self, ctx, instance):
         return self.run_make(ctx, instance, 'bins').stdout.split()
@@ -32,6 +29,11 @@ class DeltaTagsTest(Target):
         os.chdir(self.path(ctx, 'src'))
         env = {
             'TARGETDIR': self.path(ctx, instance.name),
-            'LLVM_VERSION': DeltaTags.llvm.version
+            'LLVM_VERSION': DeltaTags.llvm.version,
+            'CC': ctx.cc,
+            'CXX': ctx.cxx,
+            'CFLAGS': qjoin(ctx.cflags),
+            'CXXFLAGS': qjoin(ctx.cflags),
+            'LDFLAGS': qjoin(ctx.ldflags)
         }
         return run(ctx, ['make', *args], env=env)

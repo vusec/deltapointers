@@ -14,8 +14,16 @@ cl::opt<bool> OverflowBit("overflow-bit",
         cl::desc("Reserve most significant pointer bit for overflow on pointer arithmetic (implies 64-bit masking)"),
         cl::init(false));
 
+unsigned getAddressSpaceBits() {
+    if (AddressSpaceBits.getNumOccurrences() == 0) {
+        llvm::errs() << "Error: number of address space bits unspecified\n";
+        exit(1);
+    }
+    return AddressSpaceBits;
+}
+
 unsigned long long getAddressSpaceMask(bool MayPreserveOverflowBit) {
-    unsigned long long Mask = (unsigned long long)(-1LL) >> (PointerBits - AddressSpaceBits);
+    unsigned long long Mask = (unsigned long long)(-1LL) >> (PointerBits - getAddressSpaceBits());
     if (OverflowBit && MayPreserveOverflowBit)
         Mask |= getOverflowMask();
     return Mask;

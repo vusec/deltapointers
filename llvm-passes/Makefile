@@ -1,16 +1,17 @@
-LLVM_VERSION = 3.8.0
-CXX          = g++
-PKG_CONFIG   = python3 ../setup.py pkg-config
-LLVM_PREFIX  = $(shell $(PKG_CONFIG) llvm-$(LLVM_VERSION) --prefix)
-LLVM_CONFIG  = $(LLVM_PREFIX)/bin/llvm-config
-OBJDIR       = $(shell $(PKG_CONFIG) llvm-passes-deltatags --objdir)
-PREFIX       = $(shell $(PKG_CONFIG) llvm-passes-deltatags --prefix)
-CFLAGS       = -Werror -Wall -std=c++0x -g -O2 -I. \
-               $(shell $(PKG_CONFIG) llvm-passes-builtin-$(LLVM_VERSION) --cxxflags) \
-               $(shell $(LLVM_CONFIG) --cxxflags | sed s/-I/-isystem/g)
-LDFLAGS      = -g -shared \
-               $(shell $(PKG_CONFIG) llvm-passes-builtin-$(LLVM_VERSION) --ldflags) \
-               -Wl,--no-undefined -L$(LLVM_PREFIX)/lib -l:LLVMgold.so -Wl,--rpath=$(LLVM_PREFIX)/lib
+LLVM_VERSION   = 3.8.0
+CXX            = g++
+PKG_CONFIG     = python3 ../setup.py pkg-config
+LLVM_PREFIX    = $(shell $(PKG_CONFIG) llvm-$(LLVM_VERSION) --prefix)
+LLVM_CONFIG    = $(LLVM_PREFIX)/bin/llvm-config
+OBJDIR         = $(shell $(PKG_CONFIG) llvm-passes-deltatags --objdir)
+PREFIX         = $(shell $(PKG_CONFIG) llvm-passes-deltatags --prefix)
+CFLAGS         = -Werror -Wall -std=c++0x -g -O2 -I. \
+                 $(shell $(PKG_CONFIG) llvm-passes-builtin-$(LLVM_VERSION) --cxxflags) \
+                 $(shell $(LLVM_CONFIG) --cxxflags | sed s/-I/-isystem/g)
+BUILTIN_PREFIX = $(shell $(PKG_CONFIG) llvm-passes-builtin-$(LLVM_VERSION) --prefix)
+LDFLAGS        = -g -shared -Wl,--no-undefined \
+                 -L$(LLVM_PREFIX)/lib -l:LLVMgold.so -Wl,--rpath=$(LLVM_PREFIX)/lib \
+                 -L$(BUILTIN_PREFIX) -Wl,-whole-archive -lpasses-builtin -Wl,-no-whole-archive
 
 SRCS     := $(wildcard *.cpp)
 OBJNAMES := $(patsubst %.cpp,%.o,$(SRCS))
@@ -20,7 +21,7 @@ LIB      := libpasses.so
 
 all: $(OBJDIR)/$(LIB)
 
-$(OBJDIR)/$(LIB): $(OBJS)
+$(OBJDIR)/$(LIB): $(OBJS) $(BUILTIN_PREFIX)/libpasses-builtin.a
 	cd $(OBJDIR) && $(CXX) $(OBJNAMES) $(LDFLAGS) -o $(@F)
 
 -include $(DEPS)
