@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     long long i, n = atoi(argv[1]);
 
     if (n > 0x7fffffff) {
-        fprintf(stderr, "max N is %lld\n", 0x7fffffff);
+        fprintf(stderr, "max N is %lld\n", 0x7fffffffLL);
         return 1;
     }
 
@@ -43,7 +43,7 @@ int main(int argc, char **argv)
         (double)(tv_end.tv_usec - tv_start.tv_usec) / 1e6;
     printf("%lld iterations took %g seconds\n", n, diff);
 
-    free(a);
+    free((void*)a);
 
     return 0;
 }
