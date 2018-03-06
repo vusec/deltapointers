@@ -1,3 +1,4 @@
+import sys
 import os
 from infra import Target
 from infra.util import run, qjoin
@@ -37,3 +38,9 @@ class DeltaTagsTest(Target):
             'LDFLAGS': qjoin(ctx.ldflags)
         }
         return run(ctx, ['make', *args], env=env)
+
+    def run(self, ctx, instance, args):
+        os.chdir('src')
+        wrap = ctx.get('run_wrapper', '')
+        run(ctx, ['bash', 'runtests.sh', instance.name, wrap, *args],
+            stdout=sys.stdout, allow_error=True)

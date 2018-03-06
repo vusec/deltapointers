@@ -65,7 +65,7 @@ class DeltaTags(infra.Instance):
 
         # tag heap/stack/global allocations
         add_stats_pass(ctx, '-size-tag-alloc',
-                            '-address-space-bits', self.addrspace_bits)
+                '-address-space-bits=%d' % self.addrspace_bits)
 
         # propagate size tags on ptr arith and libc calls
         add_stats_pass(ctx, '-size-tag-prop',
@@ -84,6 +84,10 @@ class DeltaTags(infra.Instance):
 
         # inline statically linked helpers
         add_lto_args(ctx, '-custominline')
+
+    def prepare_run(self, ctx):
+        assert 'run_wrapper' not in ctx
+        ctx.run_wrapper = self.shrinkaddrspace.run_wrapper(ctx)
 
     @classmethod
     def make_instances(cls):
