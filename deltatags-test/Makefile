@@ -22,7 +22,7 @@ LLVM_VERSION := 3.8.0
 PKG_CONFIG   := python3 ../setup.py pkg-config
 INCLUDES      = `$(PKG_CONFIG) llvm-passes-builtin-$(LLVM_VERSION) --target-cflags`
 CFLAGS       += -g -O0
-CXXFLAGS     := $(CFLAGS)
+CXXFLAGS     := $(CFLAGS) -std=c++14
 
 all: $(BINS)
 
