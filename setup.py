@@ -5,8 +5,7 @@ import infra
 from instances import DeltaTags
 from targets import DeltaTagsTest
 
-curdir = os.path.dirname(os.path.abspath(__file__))
-setup = infra.Setup(curdir)
+setup = infra.Setup(__file__)
 
 setup.add_instance(infra.instances.Default(DeltaTags.llvm))
 setup.add_instance(infra.instances.DefaultLTO(DeltaTags.llvm))
@@ -17,6 +16,7 @@ for instance in DeltaTags.make_instances():
 setup.add_target(DeltaTagsTest())
 
 # patched SPEC2006
+curdir = os.path.dirname(os.path.abspath(__file__))
 patches = ['asan', 'dealII-stddef', 'omnetpp-invalid-ptrcheck']
 for name in ('gcc', 'perlbench', 'soplex', 'h264ref-sizetagprop-BCBP'):
     patches.append('%s/patches/spec2006-%s.patch' % (curdir, name))
