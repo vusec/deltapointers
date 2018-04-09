@@ -1,0 +1,134 @@
+diff --git a/benchspec/CPU2006/403.gcc/src/c-common.c b/benchspec/CPU2006/403.gcc/src/c-common.c
+index f9e5930..1d2d88a 100644
+--- a/benchspec/CPU2006/403.gcc/src/c-common.c
++++ b/benchspec/CPU2006/403.gcc/src/c-common.c
+@@ -39,6 +39,10 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+ #include "target.h"
+ cpp_reader *parse_in;		/* Declared in c-lex.h.  */
+ 
++#ifdef DELTAPOINTERS
++# include "source-instrumentation.h"
++#endif
++
+ #undef WCHAR_TYPE_SIZE
+ #define WCHAR_TYPE_SIZE TYPE_PRECISION (wchar_type_node)
+ 
+@@ -3315,10 +3319,19 @@ case_compare (k1, k2)
+ {
+   /* Consider a NULL key (such as arises with a `default' label) to be
+      smaller than anything else.  */
++#ifdef DELTAPOINTERS
++  splay_tree_key k1m = _mask_pointer((void*)k1);
++  splay_tree_key k2m = _mask_pointer((void*)k2);
++  if (!k1m)
++    return k2m ? -1 : 0;
++  else if (!k2m)
++    return k1m ? 1 : 0;
++#else
+   if (!k1)
+     return k2 ? -1 : 0;
+   else if (!k2)
+     return k1 ? 1 : 0;
++#endif
+ 
+   return tree_int_cst_compare ((tree) k1, (tree) k2);
+ }
+diff --git a/benchspec/CPU2006/403.gcc/src/ggc-page.c b/benchspec/CPU2006/403.gcc/src/ggc-page.c
+index d93a509..a257790 100644
+--- a/benchspec/CPU2006/403.gcc/src/ggc-page.c
++++ b/benchspec/CPU2006/403.gcc/src/ggc-page.c
+@@ -114,7 +114,14 @@ Software Foundation, 59 Temple Place - Suite 330, Boston, MA
+ #define GGC_DEBUG_LEVEL (0)
+ 
+ #ifndef HOST_BITS_PER_PTR
+-#define HOST_BITS_PER_PTR  HOST_BITS_PER_LONG
++# ifdef DELTAPOINTERS
++#  if ADDRSPACE_BITS > 32
++#   error "at most 32 address space bits are allowed for gcc due to a source patch incompatibility"
++#  endif
++#  define HOST_BITS_PER_PTR  ADDRSPACE_BITS
++# else
++#  define HOST_BITS_PER_PTR  HOST_BITS_PER_LONG
++# endif
+ #endif
+ 
+ 
+diff --git a/benchspec/CPU2006/403.gcc/src/obstack.c b/benchspec/CPU2006/403.gcc/src/obstack.c
+index 97a8fa8..1ec9344 100644
+--- a/benchspec/CPU2006/403.gcc/src/obstack.c
++++ b/benchspec/CPU2006/403.gcc/src/obstack.c
+@@ -46,6 +46,9 @@
+ #endif
+ #endif
+ 
++#if defined(DELTAPOINTERS) && defined(ELIDE_CODE)
++# undef ELIDE_CODE
++#endif
+ 
+ #ifndef ELIDE_CODE
+ 
+diff --git a/benchspec/CPU2006/403.gcc/src/obstack.h b/benchspec/CPU2006/403.gcc/src/obstack.h
+index f91c6e1..a9cf85c 100644
+--- a/benchspec/CPU2006/403.gcc/src/obstack.h
++++ b/benchspec/CPU2006/403.gcc/src/obstack.h
+@@ -114,6 +114,10 @@ Summary:
+ extern "C" {
+ #endif
+ 
++#ifdef DELTAPOINTERS
++# include "source-instrumentation.h"
++#endif
++
+ /* We use subtraction of (char *) 0 instead of casting to int
+    because on word-addressable machines a simple cast to int
+    may ignore the byte-within-word field of the pointer.  */
+@@ -465,12 +469,40 @@ __extension__								\
+    obstack_grow0 (__h, (where), (length));				\
+    obstack_finish (__h); })
+ 
++#ifdef DELTAPOINTERS
++/* The alignment casts do a NULL pointer addition that overflows the tag, so we
++ * manually preserve the pointer tag.
++ * We could solve this in other ways as well, e.g. by not instrumenting null
++ * pointers, changing the cast macro, and assuming in our pass that pointer ANDs
++ * are always alignment and should thus preserve the tag. */
++
+ /* The local variable is named __o1 to avoid a name conflict
+    when obstack_blank is called.  */
+ # define obstack_finish(OBSTACK)  					\
+ __extension__								\
+ ({ struct obstack *__o1 = (OBSTACK);					\
+    void *value;								\
++   uintptr_t tag;							\
++   value = (void *) __o1->object_base;					\
++   if (__o1->next_free == value)					\
++     __o1->maybe_empty_object = 1;					\
++   tag = _tag_of(__o1->next_free);					\
++   __o1->next_free							\
++     = __INT_TO_PTR ((__PTR_TO_INT (__o1->next_free)+__o1->alignment_mask)\
++		     & ~ (__o1->alignment_mask));			\
++   __o1->next_free = _tag_pointer(_mask_pointer(__o1->next_free), tag);	\
++   if (__o1->next_free - (char *)__o1->chunk				\
++       > __o1->chunk_limit - (char *)__o1->chunk)			\
++     __o1->next_free = __o1->chunk_limit;				\
++   __o1->object_base = __o1->next_free;					\
++   value; })
++
++#else
++
++# define obstack_finish(OBSTACK)  					\
++__extension__								\
++({ struct obstack *__o1 = (OBSTACK);					\
++   void *value;								\
+    value = (void *) __o1->object_base;					\
+    if (__o1->next_free == value)					\
+      __o1->maybe_empty_object = 1;					\
+@@ -483,6 +515,8 @@ __extension__								\
+    __o1->object_base = __o1->next_free;					\
+    value; })
+ 
++#endif /* DELTAPOINTERS */
++
+ # define obstack_free(OBSTACK, OBJ)					\
+ __extension__								\
+ ({ struct obstack *__o = (OBSTACK);					\

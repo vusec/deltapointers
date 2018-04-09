@@ -86,8 +86,8 @@ class DeltaTags(infra.Instance):
         add_lto_args(ctx, '-custominline')
 
     def prepare_run(self, ctx):
-        assert 'run_wrapper' not in ctx
-        ctx.run_wrapper = self.shrinkaddrspace.run_wrapper(ctx)
+        assert 'target_run_wrapper' not in ctx
+        ctx.target_run_wrapper = self.shrinkaddrspace.target_run_wrapper(ctx)
 
     @classmethod
     def make_instances(cls):

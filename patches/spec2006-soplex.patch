@@ -1,0 +1,136 @@
+diff --git a/benchspec/CPU2006/450.soplex/src/idlist.h b/benchspec/CPU2006/450.soplex/src/idlist.h
+index 728b996..097cdcd 100644
+--- a/benchspec/CPU2006/450.soplex/src/idlist.h
++++ b/benchspec/CPU2006/450.soplex/src/idlist.h
+@@ -28,6 +28,10 @@
+ #include "spxdefines.h"
+ #include "islist.h"
+ 
++#ifdef DELTAPOINTERS
++#include "source-instrumentation.h"
++#endif
++
+ namespace soplex
+ {
+ /**@brief   Elements for #IdList%s.
+@@ -285,8 +289,13 @@ public:
+          IsList<T>::move(delta);
+          for (elem = last(); elem; elem = prev(elem))
+             if (elem != first())
++#ifdef DELTAPOINTERS
++               elem->prev() = reinterpret_cast<T*>(
++                  UNSAFE_ARITH(elem->prev(), delta));
++#else
+                elem->prev() = reinterpret_cast<T*>(
+                   reinterpret_cast<char*>(elem->prev()) + delta);
++#endif
+       }
+    }
+ 
+diff --git a/benchspec/CPU2006/450.soplex/src/islist.h b/benchspec/CPU2006/450.soplex/src/islist.h
+index d8d2485..4c3f48a 100644
+--- a/benchspec/CPU2006/450.soplex/src/islist.h
++++ b/benchspec/CPU2006/450.soplex/src/islist.h
+@@ -28,6 +28,10 @@
+ 
+ #include "message.h"
+ 
++#ifdef DELTAPOINTERS
++#include "source-instrumentation.h"
++#endif
++
+ namespace soplex
+ {
+ /**@brief   Elements for #IsList%s.
+@@ -356,11 +360,19 @@ public:
+       if (the_first)
+       {
+          T* elem;
++#ifdef DELTAPOINTERS
++         the_last  = reinterpret_cast<T*>(UNSAFE_ARITH(the_last, delta));
++         the_first = reinterpret_cast<T*>(UNSAFE_ARITH(the_first, delta));
++         for (elem = first(); elem; elem = next(elem))
++            if (elem != last())
++               elem->next() = reinterpret_cast<T*>(UNSAFE_ARITH(elem->next(), delta));
++#else
+          the_last  = reinterpret_cast<T*>(reinterpret_cast<char*>(the_last) + delta);
+          the_first = reinterpret_cast<T*>(reinterpret_cast<char*>(the_first) + delta);
+          for (elem = first(); elem; elem = next(elem))
+             if (elem != last())
+                elem->next() = reinterpret_cast<T*>(reinterpret_cast<char*>(elem->next()) + delta);
++#endif
+       }
+    }
+ 
+diff --git a/benchspec/CPU2006/450.soplex/src/svector.h b/benchspec/CPU2006/450.soplex/src/svector.h
+index c5f562c..2b8f076 100644
+--- a/benchspec/CPU2006/450.soplex/src/svector.h
++++ b/benchspec/CPU2006/450.soplex/src/svector.h
+@@ -30,6 +30,10 @@
+ #include "spxdefines.h"
+ #include "vector.h"
+ 
++#ifdef DELTAPOINTERS
++#include "source-instrumentation.h"
++#endif
++
+ namespace soplex
+ {
+ /**@brief   Sparse vectors.
+@@ -351,7 +355,13 @@ public:
+       {
+          assert(elmem != 0);
+          elmem->val = 0;        // for purify to shut up
++#ifdef DELTAPOINTERS_UBOUND_BRANCH
++         m_elem = (Element*)_tag_pointer(&elmem[1], (uintptr_t)(&elmem[n]));
++#elif defined(DELTAPOINTERS)
++         m_elem = (Element*)_tag_pointer(&elmem[1], -(n - 1) * sizeof (Element));
++#else
+          m_elem = &(elmem[1]);
++#endif
+          set_size( 0 );
+          set_max ( n - 1 );
+       }
+diff --git a/benchspec/CPU2006/450.soplex/src/svset.cc b/benchspec/CPU2006/450.soplex/src/svset.cc
+index 3ea9872..66efead 100644
+--- a/benchspec/CPU2006/450.soplex/src/svset.cc
++++ b/benchspec/CPU2006/450.soplex/src/svset.cc
+@@ -23,6 +23,10 @@
+ #include "svset.h"
+ #include "message.h"
+ 
++#ifdef DELTAPOINTERS
++#include "source-instrumentation.h"
++#endif
++
+ namespace soplex
+ {
+ 
+@@ -262,7 +266,11 @@ void SVSet::memRemax(int newmax)
+    {
+       for (DLPSV* ps = list.first(); ps; ps = list.next(ps))
+       {
++#ifdef DELTAPOINTERS
++         SVector::Element * info = reinterpret_cast<SVector::Element*>(UNSAFE_ARITH(ps->mem(), delta));
++#else
+          SVector::Element * info = reinterpret_cast<SVector::Element*>(reinterpret_cast<char*>(ps->mem()) + delta);
++#endif
+          int sz = info->idx;
+          int l_max = int( info->val );
+          assert(l_max >= sz );
+@@ -339,9 +347,15 @@ SVSet& SVSet::operator=(const SVSet& rhs)
+          {
+             newps = & set[ rhs.number(ps) ];
+             list.append(newps);
++#ifdef DELTAPOINTERS
++            newps->setMem(ps->max() + 1,
++               reinterpret_cast<SVector::Element*>(
++                  UNSAFE_ARITH(ps->mem(), delta)));
++#else
+             newps->setMem(ps->max() + 1, 
+                reinterpret_cast<SVector::Element*>(
+                   reinterpret_cast<char*>(ps->mem()) + delta));
++#endif
+             newps->set_size( ps->size() );
+          }
+       }

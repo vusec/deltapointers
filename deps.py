@@ -72,7 +72,7 @@ class LibDeltaTags(Package):
         # link static library
         ctx.ldflags += ['-L' + self.path(ctx, 'obj'), '-Wl,-whole-archive',
                         '-l:libsizetags.a', '-Wl,-no-whole-archive']
-        ctx.cflags += ['-DSIZETAGS', '-I' + self.path(ctx, 'src')]
+        ctx.cflags += ['-DDELTAPOINTERS', '-I' + self.path(ctx, 'src')]
         ctx.cflags += self.llvm_passes.runtime_cflags(ctx)
 
         # pass overflow-bit option to instrumentation pass

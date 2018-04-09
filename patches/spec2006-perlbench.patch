@@ -1,0 +1,143 @@
+diff --git a/benchspec/CPU2006/400.perlbench/src/mg.c b/benchspec/CPU2006/400.perlbench/src/mg.c
+index 64e7781..2847cad 100644
+--- a/benchspec/CPU2006/400.perlbench/src/mg.c
++++ b/benchspec/CPU2006/400.perlbench/src/mg.c
+@@ -1072,6 +1072,8 @@ Perl_magic_set_all_env(pTHX_ SV *sv, MAGIC *mg)
+     return 0;
+ }
+ 
++#include "sizetags-mask.h"
++
+ int
+ Perl_magic_clear_all_env(pTHX_ SV *sv, MAGIC *mg)
+ {
+@@ -1093,14 +1095,14 @@ Perl_magic_clear_all_env(pTHX_ SV *sv, MAGIC *mg)
+     I32 i;
+ 
+     if (environ == PL_origenviron)
+-	environ = (char**)safesysmalloc(sizeof(char*));
++	environ = (char**)_MASK(safesysmalloc(sizeof(char*)));
+     else
+ 	for (i = 0; environ[i]; i++)
+ 	    safesysfree(environ[i]);
+     }
+ #      endif /* PERL_USE_SAFE_PUTENV */
+ 
+-    environ[0] = Nullch;
++    environ[0] = _MASK(Nullch);
+     }
+ #    endif /* USE_ENVIRON_ARRAY */
+ #   endif /* PERL_IMPLICIT_SYS || WIN32 */
+diff --git a/benchspec/CPU2006/400.perlbench/src/perl.c b/benchspec/CPU2006/400.perlbench/src/perl.c
+index 9085e57..be58c80 100644
+--- a/benchspec/CPU2006/400.perlbench/src/perl.c
++++ b/benchspec/CPU2006/400.perlbench/src/perl.c
+@@ -4292,6 +4292,8 @@ S_set_caret_X(pTHX) {
+     }
+ }
+ 
++#include "sizetags-mask.h"
++
+ STATIC void
+ S_init_postdump_symbols(pTHX_ register int argc, register char **argv, register char **env)
+ {
+@@ -4341,7 +4343,7 @@ S_init_postdump_symbols(pTHX_ register int argc, register char **argv, register
+ #  endif
+ 	   )
+ 	{
+-	    environ[0] = Nullch;
++	    environ[0] = _MASK(Nullch);
+ 	}
+ 	if (env) {
+           char** origenv = environ;
+diff --git a/benchspec/CPU2006/400.perlbench/src/perl.h b/benchspec/CPU2006/400.perlbench/src/perl.h
+index bb38b25..1f9fb54 100644
+--- a/benchspec/CPU2006/400.perlbench/src/perl.h
++++ b/benchspec/CPU2006/400.perlbench/src/perl.h
+@@ -1414,7 +1414,10 @@ typedef UVTYPE UV;
+ #endif
+ #define NUM2PTR(any,d)	(any)(PTRV)(d)
+ #define PTR2IV(p)	INT2PTR(IV,p)
+-#define PTR2UV(p)	INT2PTR(UV,p)
++#include "sizetags-mask.h"
++// mask PTR2UV pointers which are passed to sprintf-like functions as ints to be
++// used for pointer stringification (sprintf will just see an int)
++#define PTR2UV(p)	INT2PTR(UV,_MASK(p))
+ #define PTR2NV(p)	NUM2PTR(NV,p)
+ #if PTRSIZE == LONGSIZE
+ #  define PTR2ul(p)	(unsigned long)(p)
+diff --git a/benchspec/CPU2006/400.perlbench/src/sizetags-mask.h b/benchspec/CPU2006/400.perlbench/src/sizetags-mask.h
+new file mode 100644
+index 0000000..eee377c
+--- /dev/null
++++ b/benchspec/CPU2006/400.perlbench/src/sizetags-mask.h
+@@ -0,0 +1,11 @@
++#ifndef DELTAPOINTERS_MASK_H
++#define DELTAPOINTERS_MASK_H
++
++#ifdef DELTAPOINTERS
++# include "source-instrumentation.h"
++# define _MASK(p) _mask_pointer(p)
++#else
++# define _MASK(p) (p)
++#endif
++
++#endif // DELTAPOINTERS_MASK_H
+diff --git a/benchspec/CPU2006/400.perlbench/src/util.c b/benchspec/CPU2006/400.perlbench/src/util.c
+index fc959bb..dbda6ee 100644
+--- a/benchspec/CPU2006/400.perlbench/src/util.c
++++ b/benchspec/CPU2006/400.perlbench/src/util.c
+@@ -1408,6 +1408,8 @@ Perl_vwarner(pTHX_ U32  err, const char* pat, va_list* args)
+    Copy(val, s+(nlen+1), vlen, char); \
+    *(s+(nlen+1+vlen)) = '\0'
+ 
++#include "sizetags-mask.h"
++
+ #ifdef USE_ENVIRON_ARRAY
+        /* VMS' my_setenv() is in vms.c */
+ #if !defined(WIN32) && !defined(NETWARE)
+@@ -1432,13 +1434,13 @@ Perl_my_setenv(pTHX_ char *nam, char *val)
+ 
+ 	/*SUPPRESS 530*/
+ 	for (max = i; environ[max]; max++) ;
+-	tmpenv = (char**)safesysmalloc((max+2) * sizeof(char*));
++	tmpenv = (char**)_MASK(safesysmalloc((max+2) * sizeof(char*)));
+ 	for (j=0; j<max; j++) {		/* copy environment */
+ 	    int len = strlen(environ[j]);
+-	    tmpenv[j] = (char*)safesysmalloc((len+1)*sizeof(char));
++	    tmpenv[j] = (char*)_MASK(safesysmalloc((len+1)*sizeof(char)));
+ 	    Copy(environ[j], tmpenv[j], len+1, char);
+ 	}
+-	tmpenv[max] = Nullch;
++	tmpenv[max] = _MASK(Nullch);
+ 	environ = tmpenv;		/* tell exec where it is now */
+     }
+     if (!val) {
+@@ -1450,15 +1452,15 @@ Perl_my_setenv(pTHX_ char *nam, char *val)
+ 	return;
+     }
+     if (!environ[i]) {			/* does not exist yet */
+-	environ = (char**)safesysrealloc(environ, (i+2) * sizeof(char*));
+-	environ[i+1] = Nullch;	/* make sure it's null terminated */
++	environ = (char**)_MASK(safesysrealloc(environ, (i+2) * sizeof(char*)));
++	environ[i+1] = _MASK(Nullch);	/* make sure it's null terminated */
+     }
+     else
+ 	safesysfree(environ[i]);
+     nlen = strlen(nam);
+     vlen = strlen(val);
+ 
+-    environ[i] = (char*)safesysmalloc((nlen+vlen+2) * sizeof(char));
++    environ[i] = (char*)_MASK(safesysmalloc((nlen+vlen+2) * sizeof(char)));
+     /* all that work just for this */
+     my_setenv_format(environ[i], nam, nlen, val, vlen);
+     } else {
+@@ -1472,7 +1474,7 @@ Perl_my_setenv(pTHX_ char *nam, char *val)
+ 	val = "";
+     }
+     vlen = strlen(val);
+-    new_env = (char*)safesysmalloc((nlen + vlen + 2) * sizeof(char));
++    new_env = (char*)_MASK(safesysmalloc((nlen + vlen + 2) * sizeof(char)));
+     /* all that work just for this */
+     my_setenv_format(new_env, nam, nlen, val, vlen);
+     (void)putenv(new_env);

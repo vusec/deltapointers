@@ -1,0 +1,28 @@
+diff --git a/benchspec/CPU2006/464.h264ref/src/biariencode.c b/benchspec/CPU2006/464.h264ref/src/biariencode.c
+index 28975c5..47ed75b 100644
+--- a/benchspec/CPU2006/464.h264ref/src/biariencode.c
++++ b/benchspec/CPU2006/464.h264ref/src/biariencode.c
+@@ -320,6 +320,9 @@ void biari_encode_symbol_final(EncodingEnvironmentPtr eep, signed short symbol)
+ }
+ 
+ 
++#ifdef DELTAPOINTERS
++#include "source-instrumentation.h"
++#endif
+ 
+ /*!
+  ************************************************************************
+@@ -331,6 +334,13 @@ void biari_init_context (BiContextTypePtr ctx, const int* ini)
+ {
+   int pstate;
+ 
++#ifdef DELTAPOINTERS
++  /* Mask out ini manually, as for INIT_BCBP_I it will go out-of-bounds
++   * legitimately because NUM_BLOCK_TYPE (=10) is larger than the array it will
++   * index (8). */
++  ini = (const int*)_mask_pointer(ini);
++#endif
++
+   pstate = ((ini[0]* max(0, img->qp)) >> 4) + ini[1];
+   pstate = min (max ( 1, pstate), 126);
+ 
