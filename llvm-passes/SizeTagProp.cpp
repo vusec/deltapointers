@@ -188,6 +188,9 @@ static std::map<std::string, unsigned int> CopyFromArgList = {
     { "_ZSt18_Rb_tree_incrementPKSt18_Rb_tree_node_base", 0 }, /* std::_Rb_tree_increment */
     { "_ZSt18_Rb_tree_incrementPSt18_Rb_tree_node_base", 0 }, /* std::_Rb_tree_increment */
     { "_ZSt28_Rb_tree_rebalance_for_erasePSt18_Rb_tree_node_baseRS_", 0 }, /* std::_Rb_tree_rebalance_for_erase */
+
+    /* Added for omnetpp */
+    { "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEpLEPKc", 0 },
 };
 
 /* Take difference between input-pointer (argument n) and output-pointer. */
@@ -234,6 +237,7 @@ static std::set<std::string> StrlenList = {
     "getenv",
     "strerror",
     "strsignal",
+    "strdup",
     "__strdup",
     "crypt",
     "ttyname",
