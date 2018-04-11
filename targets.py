@@ -1,4 +1,3 @@
-import sys
 import os
 from infra import Target
 from infra.util import run, qjoin
@@ -41,6 +40,6 @@ class DeltaTagsTest(Target):
 
     def run(self, ctx, instance, args):
         os.chdir('src')
-        wrap = ctx.get('run_wrapper', '')
+        wrap = ctx.get('target_run_wrapper', '')
         run(ctx, ['bash', 'runtests.sh', instance.name, wrap, *args],
-            stdout=sys.stdout, allow_error=True)
+            teeout=True, allow_error=True)

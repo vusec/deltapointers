@@ -87,7 +87,7 @@ class DeltaTags(infra.Instance):
 
     def prepare_run(self, ctx):
         assert 'target_run_wrapper' not in ctx
-        ctx.target_run_wrapper = self.shrinkaddrspace.target_run_wrapper(ctx)
+        ctx.target_run_wrapper = self.shrinkaddrspace.run_wrapper(ctx)
 
     @classmethod
     def make_instances(cls):
