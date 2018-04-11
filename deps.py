@@ -20,7 +20,9 @@ class LibDeltaTags(Package):
 
     def dependencies(self):
         yield self.llvm_passes.llvm
-        yield ShrinkAddrSpace(self.addrspace_bits, srcdir='shrinkaddrspace')
+        curdir = os.path.dirname(os.path.abspath(__file__))
+        yield ShrinkAddrSpace(self.addrspace_bits,
+                              srcdir=curdir + '/shrinkaddrspace')
 
     def ident(self):
         return 'libdeltatags-%d%s' % (self.addrspace_bits,
