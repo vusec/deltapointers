@@ -1,4 +1,5 @@
 import os
+import argparse
 from infra import Target
 from infra.util import run, qjoin
 from instances import DeltaTags
@@ -38,8 +39,12 @@ class DeltaTagsTest(Target):
         }
         return run(ctx, ['make', *args], env=env)
 
-    def run(self, ctx, instance, args):
+    def add_run_args(self, parser):
+        parser.add_argument('args', nargs=argparse.REMAINDER,
+                help='arguments to pass to run script')
+
+    def run(self, ctx, instance):
         os.chdir('src')
         wrap = ctx.get('target_run_wrapper', '')
-        run(ctx, ['bash', 'runtests.sh', instance.name, wrap, *args],
+        run(ctx, ['bash', 'runtests.sh', instance.name, wrap, *ctx.args.args],
             teeout=True, allow_error=True)

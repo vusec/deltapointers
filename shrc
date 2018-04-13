@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then
-    echo "Error: this script should be sourced, not executed"
-    exit 1
-fi
-
-DIR="$(builtin cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-alias setup="python3 $DIR/setup.py"

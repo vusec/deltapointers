@@ -22,8 +22,8 @@ for name in ('gcc', 'perlbench', 'soplex', 'h264ref-sizetagprop-BCBP'):
     patches.append('%s/patches/spec2006-%s.patch' % (curdir, name))
 
 setup.add_target(infra.targets.SPEC2006(
-    giturl='git@bitbucket.org:vusec/spec-cpu2006-cd.git',
-    patches=patches
+    source='git@bitbucket.org:vusec/spec-cpu2006-cd.git',
+    source_type='git', patches=patches
 ))
 
 if __name__ == '__main__':
