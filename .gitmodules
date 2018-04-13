@@ -1,3 +1,3 @@
 [submodule "infra"]
 	path = infra
-	url = git@bitbucket.org:taddeus/instrumentation-infra.git
+	url = git@bitbucket.org:vusec/instrumentation-infra.git
