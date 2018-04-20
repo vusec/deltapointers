@@ -7,8 +7,8 @@ from targets import DeltaTagsTest
 
 setup = infra.Setup(__file__)
 
-setup.add_instance(infra.instances.Default(DeltaTags.llvm))
-setup.add_instance(infra.instances.DefaultLTO(DeltaTags.llvm))
+setup.add_instance(infra.instances.Clang(DeltaTags.llvm))
+setup.add_instance(infra.instances.ClangLTO(DeltaTags.llvm))
 for instance in DeltaTags.make_instances():
     setup.add_instance(instance)
 
