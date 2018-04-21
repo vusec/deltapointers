@@ -12,17 +12,23 @@ BUILTIN_PREFIX = $(shell $(PKG_CONFIG) llvm-passes-builtin-$(LLVM_VERSION) --pre
 LDFLAGS        = -g -shared -Wl,--no-undefined \
                  -L$(LLVM_PREFIX)/lib -l:LLVMgold.so -Wl,--rpath=$(LLVM_PREFIX)/lib \
                  -L$(BUILTIN_PREFIX) -Wl,-whole-archive -lpasses-builtin -Wl,-no-whole-archive
+LDFLAGSOPT     = -g -shared  \
+                 -L$(BUILTIN_PREFIX) -Wl,-whole-archive -lpasses-builtin -Wl,-no-whole-archive
 
 SRCS     := $(wildcard *.cpp)
 OBJNAMES := $(patsubst %.cpp,%.o,$(SRCS))
 OBJS     := $(addprefix $(OBJDIR)/,$(OBJNAMES))
 DEPS     := $(OBJS:.o=.d)
 LIB      := libpasses.so
+LIBOPT   := libpasses-opt.so
 
-all: $(OBJDIR)/$(LIB)
+all: $(OBJDIR)/$(LIB) $(OBJDIR)/$(LIBOPT)
 
 $(OBJDIR)/$(LIB): $(OBJS) $(BUILTIN_PREFIX)/libpasses-builtin.a
 	cd $(OBJDIR) && $(CXX) $(OBJNAMES) $(LDFLAGS) -o $(@F)
+
+$(OBJDIR)/$(LIBOPT): $(OBJS) $(BUILTIN_PREFIX)/libpasses-builtin.a
+	cd $(OBJDIR) && $(CXX) $(OBJNAMES) $(LDFLAGSOPT) -o $(@F)
 
 -include $(DEPS)
 
@@ -35,7 +41,7 @@ $(OBJDIR):
 clean:
 	rm -rf $(OBJDIR)
 
-install: $(PREFIX)/$(LIB)
+install: $(PREFIX)/$(LIB) $(PREFIX)/$(LIBOPT)
 
 $(PREFIX)/%: $(OBJDIR)/% | $(PREFIX)
 	cp $< $@
