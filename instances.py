@@ -39,7 +39,7 @@ class DeltaTags(infra.Instance):
 
     def configure(self, ctx):
         # helper libraries
-        self.llvm.configure(ctx, lto=True)
+        self.llvm.configure(ctx)
         self.llvm_passes.configure(ctx)
         self.shrinkaddrspace.configure(ctx, static=True)
         self.libdeltatags.configure(ctx)
