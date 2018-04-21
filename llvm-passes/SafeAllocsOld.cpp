@@ -185,8 +185,9 @@ bool SafeAllocsOld::isPtrUseSafe(Instruction *U, Value *Ptr,
             return true;
     }
     else ifcast(StoreInst, SI, U) {
-        if (SI->getValueOperand() != U)
-            return true;
+        // Pointers stored in memory are always unsafe
+        if (SI->getValueOperand() == Ptr)
+            return false;
         if (!isUnsafeDeref(SI, PtrBounds, Depth))
             return true;
     }
