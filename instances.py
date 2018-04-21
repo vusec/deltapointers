@@ -10,6 +10,7 @@ class DeltaTags(infra.Instance):
     addrspace_bits = 32
     llvm_version = '3.8.0'
     llvm_patches = ['gold-plugins', 'statsfilter']
+    debug = False # toggle for debug symbols
 
     curdir = os.path.dirname(os.path.abspath(__file__))
     doxygen_flags = [
@@ -24,7 +25,7 @@ class DeltaTags(infra.Instance):
     shrinkaddrspace = ShrinkAddrSpace(addrspace_bits,
                                       srcdir=curdir + '/shrinkaddrspace')
     libdeltatags = LibDeltaTags(llvm_passes, addrspace_bits, overflow_bit=True,
-                                runtime_stats=False, debug=False)
+                                runtime_stats=False, debug=debug)
 
     def __init__(self, name, overflow_check, optimizer):
         self.name = name
@@ -43,6 +44,17 @@ class DeltaTags(infra.Instance):
         self.llvm_passes.configure(ctx)
         self.shrinkaddrspace.configure(ctx, static=True)
         self.libdeltatags.configure(ctx)
+
+        if self.debug:
+            ctx.cflags += ['-O0', '-ggdb']
+            ctx.cxxflags += ['-O0', '-ggdb']
+            add_lto_args(ctx, '-disable-opt')
+        else:
+            # note: link-time optimizations break some programs (perlbench,
+            # gcc) if our instrumentation runs and -O2 was not passed at
+            # compile time
+            ctx.cflags += ['-O2']
+            ctx.cxxflags += ['-O2']
 
         # prepare initalizations of globals so that the next passes only have to
         # operate on instructions (rather than constantexprs)
