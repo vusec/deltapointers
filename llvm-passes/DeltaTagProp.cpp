@@ -191,6 +191,9 @@ static std::map<std::string, unsigned int> CopyFromArgList = {
 
     /* Added for omnetpp */
     { "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEpLEPKc", 0 },
+
+    /* Added for deltatags-test */
+    { "_ZNSsaSEPKc", 0 },
 };
 
 /* Take difference between input-pointer (argument n) and output-pointer. */
