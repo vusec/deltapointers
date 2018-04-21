@@ -76,12 +76,12 @@ class DeltaTags(infra.Instance):
         add_stats_pass(ctx, '-find-reinterpreted-pointers')
 
         # tag heap/stack/global allocations
-        add_stats_pass(ctx, '-delta-tag-alloc',
+        add_stats_pass(ctx, '-deltatags-alloc',
                 '-address-space-bits=%d' % self.addrspace_bits)
 
         # propagate size tags on ptr arith and libc calls
-        add_stats_pass(ctx, '-delta-tag-prop',
-                '-check-ptr-arith-overflow=' + self.overflow_check)
+        add_stats_pass(ctx, '-deltatags-prop',
+                '-deltatags-check-overflow=' + self.overflow_check)
 
         # mask pointers at dereferences / libcalls
         add_stats_pass(ctx, '-mask-pointers',
@@ -104,8 +104,7 @@ class DeltaTags(infra.Instance):
     @classmethod
     def make_instances(cls):
         # cls(name, overflow_check, optimizer)
-        yield cls('deltatags', 'none', None)
-        yield cls('deltatags-opt', 'none', 'old')
-        yield cls('deltatags-corrupt', 'corrupt', None)
-        yield cls('deltatags-corrupt-opt', 'corrupt', 'old')
+        yield cls('deltatags-noopt', 'none', None)
+        yield cls('deltatags', 'none', 'old')
+        yield cls('deltatags-satarith', 'satarith', 'old')
         yield cls('deltatags-newopt', 'none', 'new')

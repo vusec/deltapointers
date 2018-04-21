@@ -1,4 +1,4 @@
-#define DEBUG_TYPE "delta-tag-alloc"
+#define DEBUG_TYPE "deltatags-alloc"
 
 #include "utils/Common.h"
 #include "utils/CustomFunctionPass.h"
@@ -46,18 +46,18 @@ private:
 };
 
 char DeltaTagAlloc::ID = 0;
-static RegisterPass<DeltaTagAlloc> X("delta-tag-alloc",
+static RegisterPass<DeltaTagAlloc> X("deltatags-alloc",
         "Encode object size in high bits of pointers for bounds checking");
 
-static cl::opt<bool> OptGlobal("delta-tag-global",
+static cl::opt<bool> OptGlobal("deltatags-global",
         cl::desc("Tag globals"),
         cl::init(true));
 
-static cl::opt<bool> OptHeap("delta-tag-heap",
+static cl::opt<bool> OptHeap("deltatags-heap",
         cl::desc("Tag heap allocations"),
         cl::init(true));
 
-static cl::opt<bool> OptStack("delta-tag-stack",
+static cl::opt<bool> OptStack("deltatags-stack",
         cl::desc("Tag stack allocations"),
         cl::init(true));
 

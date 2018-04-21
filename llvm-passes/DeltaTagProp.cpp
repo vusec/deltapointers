@@ -4,7 +4,7 @@
 #include <set>
 #include <map>
 
-#define DEBUG_TYPE "delta-tag-prop"
+#define DEBUG_TYPE "deltatags-prop"
 
 #include "utils/Common.h"
 #include "utils/CustomFunctionPass.h"
@@ -16,7 +16,7 @@
 
 using namespace llvm;
 
-enum ArithCheckMode { nocheck, corrupt, branch };
+enum ArithCheckMode { nocheck, satarith, branch };
 
 static cl::opt<bool> EnablePtrArith("deltatags-enable-ptr-arith",
         cl::desc("Enable pointer arithmetic propagation to metadata bits"),
@@ -30,17 +30,17 @@ static cl::opt<bool> SubtractionArith("deltatags-sub-arith",
         cl::desc("Use pointer subtraction for non-constant pointer arithmetic propagation"),
         cl::init(false));
 
-static cl::opt<enum ArithCheckMode> CheckPtrArithOverflow("check-ptr-arith-overflow",
+static cl::opt<enum ArithCheckMode> CheckOverflow("deltatags-check-overflow",
         cl::desc("Add overflow checks to GEPs with positive or dynamic offsets:"),
         cl::values(
             clEnumValN(nocheck, "none", "No overflow check (default)"),
-             clEnumVal(corrupt,         "Corrupt pointer on overflow (replace with NULL) using setcc instructions"),
+             clEnumVal(satarith,        "Corrupt pointer on overflow (replace with NULL) using setcc instructions"),
              clEnumVal(branch,          "Branch to error code on overflow"),
             clEnumValEnd),
         cl::init(nocheck));
 
 // This is only necessary for dealII in SPEC, and adds minor runtime overhead
-static cl::opt<bool> CheckPtrArithUnderflow("check-ptr-arith-underflow",
+static cl::opt<bool> CheckUnderflow("deltatags-check-underflow",
         cl::desc("Add runtime checks on zero metadata (implemented as cmov on x86) at negative GEPs to avoid underflows"),
         cl::init(true));
 
@@ -84,7 +84,7 @@ private:
 };
 
 char DeltaTagProp::ID = 0;
-static RegisterPass<DeltaTagProp> X("delta-tag-prop",
+static RegisterPass<DeltaTagProp> X("deltatags-prop",
         "Propagate deltatags metadata to return values on stdlib functions");
 
 STATISTIC(NLibCall,                 "Number of libcalls instrumented: total");
@@ -601,7 +601,7 @@ bool DeltaTagProp::instrumentPtrArith(GetElementPtrInst *Gep) {
 
     /* For known negative offsets, insert a check if the pointer indeed has
      * metadata, and don't do a zero metadata addition if this is the case. */
-    if (CheckPtrArithUnderflow && hasNegativeOffset(Gep)) {
+    if (CheckUnderflow && hasNegativeOffset(Gep)) {
         // TODO: don't insert check if pointer operand certainly has metadata
         //       (if we can find the tag, i.e., if it is or'ed with a const)
 
@@ -624,7 +624,7 @@ bool DeltaTagProp::instrumentPtrArith(GetElementPtrInst *Gep) {
      * set after the operation.
      * For dynamic GEPs, check if the offset is positive and if the operation
      * overflows. */
-    else if (CheckPtrArithOverflow != nocheck && !(ConstOffset && ConstOffset->isNegative())) {
+    else if (CheckOverflow != nocheck && !(ConstOffset && ConstOffset->isNegative())) {
         Value *OAdd = B.CreateCall(AddWithOverflowFunc, {PtrInt, AddOffset}, Prefix + "oadd");
         Value *Result = B.CreateExtractValue(OAdd, 0, Prefix + "added");
         Value *Overflow = B.CreateExtractValue(OAdd, 1, Prefix + "overflow");
@@ -635,7 +635,7 @@ bool DeltaTagProp::instrumentPtrArith(GetElementPtrInst *Gep) {
             ++NDynamicOverflowCheck;
         }
 
-        switch (CheckPtrArithOverflow) {
+        switch (CheckOverflow) {
             /* Branch to trap code if the operation overflows */
             case branch: {
                 // FIXME: what was hasNonDereferencingUser for again?
@@ -659,7 +659,7 @@ bool DeltaTagProp::instrumentPtrArith(GetElementPtrInst *Gep) {
                 // non-dereferencing user
             }
             /* Nullify the result if the operation overflows */
-            case corrupt:
+            case satarith:
                 PtrAdd = B.CreateSelect(NotNegativeAndOverflow, ZeroPtr, Result, Prefix + "added");
                 break;
             case nocheck:
@@ -862,7 +862,7 @@ bool DeltaTagProp::initializeModule(Module &M) {
     DL = &M.getDataLayout();
     StrBufSizeFunc = getNoInstrumentFunction(M, "strsize_nullsafe", false);
     NewStrtokFunc = getNoInstrumentFunction(M, "strtok", false);
-    if (CheckPtrArithOverflow != nocheck) {
+    if (CheckOverflow != nocheck) {
         Type *PtrIntTy = getPtrIntTy(M.getContext());
         AddWithOverflowFunc = Intrinsic::getDeclaration(&M,
                 Intrinsic::uadd_with_overflow, PtrIntTy);
