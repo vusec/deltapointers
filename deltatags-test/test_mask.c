@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-#include "sizetags.h"
+#include "deltatags.h"
 
 DEBUG_MODULE_NAME("test_mask");
 

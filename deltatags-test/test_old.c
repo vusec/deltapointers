@@ -3,7 +3,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "sizetags.h"
+#include "deltatags.h"
 
 DEBUG_MODULE_NAME("test_old");
 

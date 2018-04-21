@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "sizetags.h"
+#include "deltatags.h"
 
 DEBUG_MODULE_NAME("test_global_string_free");
 

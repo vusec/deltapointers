@@ -25,7 +25,7 @@ ifeq ($(DEBUG), true)
 	CFLAGS += -DDEBUG
 endif
 
-LIB  := libsizetags.a
+LIB  := libdeltatags.a
 OBJS := libptrret mask debug runtimestats mask-wrappers
 OBJS := $(patsubst %,$(OBJDIR)/%.o,$(OBJS))
 

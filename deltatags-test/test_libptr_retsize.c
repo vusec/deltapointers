@@ -4,7 +4,7 @@
 #include <time.h>
 #include <ctype.h>
 
-#include "sizetags.h"
+#include "deltatags.h"
 
 DEBUG_MODULE_NAME("test_libptr_retsize");
 

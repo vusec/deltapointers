@@ -54,7 +54,7 @@ class LibDeltaTags(Package):
         return os.path.exists('src')
 
     def is_built(self, ctx):
-        return os.path.exists('obj/libsizetags.a')
+        return os.path.exists('obj/libdeltatags.a')
 
     def is_installed(self, ctx):
         return self.is_built(ctx)
@@ -73,7 +73,7 @@ class LibDeltaTags(Package):
 
         # link static library
         ctx.ldflags += ['-L' + self.path(ctx, 'obj'), '-Wl,-whole-archive',
-                        '-l:libsizetags.a', '-Wl,-no-whole-archive']
+                        '-l:libdeltatags.a', '-Wl,-no-whole-archive']
         ctx.cflags += ['-DDELTAPOINTERS', '-I' + self.path(ctx, 'src')]
         ctx.cflags += self.llvm_passes.runtime_cflags(ctx)
 

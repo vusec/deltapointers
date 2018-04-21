@@ -3,7 +3,7 @@
 #include <cstdio>
 #include <stdint.h>
 
-#include "sizetags.h"
+#include "deltatags.h"
 
 DEBUG_MODULE_NAME("test_libptr_copyfromarg_cpp");
 

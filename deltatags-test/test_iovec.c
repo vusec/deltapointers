@@ -5,7 +5,7 @@
 #include <fcntl.h>
 #include <sys/uio.h>
 
-#include "sizetags.h"
+#include "deltatags.h"
 
 DEBUG_MODULE_NAME("test_iovec");
 

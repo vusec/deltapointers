@@ -1,4 +1,4 @@
-#define DEBUG_TYPE "size-tag-alloc"
+#define DEBUG_TYPE "delta-tag-alloc"
 
 #include "utils/Common.h"
 #include "utils/CustomFunctionPass.h"
@@ -24,9 +24,9 @@
 
 using namespace llvm;
 
-struct SizeTagAlloc : public CustomFunctionPass {
+struct DeltaTagAlloc : public CustomFunctionPass {
     static char ID;
-    SizeTagAlloc() : CustomFunctionPass(ID) {}
+    DeltaTagAlloc() : CustomFunctionPass(ID) {}
 
     void getAnalysisUsage(AnalysisUsage &AU) const override;
 
@@ -45,27 +45,27 @@ private:
     Constant *getNullPtr(PointerType *Ty);
 };
 
-char SizeTagAlloc::ID = 0;
-static RegisterPass<SizeTagAlloc> X("size-tag-alloc",
+char DeltaTagAlloc::ID = 0;
+static RegisterPass<DeltaTagAlloc> X("delta-tag-alloc",
         "Encode object size in high bits of pointers for bounds checking");
 
-static cl::opt<bool> OptGlobal("size-tag-global",
+static cl::opt<bool> OptGlobal("delta-tag-global",
         cl::desc("Tag globals"),
         cl::init(true));
 
-static cl::opt<bool> OptHeap("size-tag-heap",
+static cl::opt<bool> OptHeap("delta-tag-heap",
         cl::desc("Tag heap allocations"),
         cl::init(true));
 
-static cl::opt<bool> OptStack("size-tag-stack",
+static cl::opt<bool> OptStack("delta-tag-stack",
         cl::desc("Tag stack allocations"),
         cl::init(true));
 
-static cl::opt<bool> OptOverinit("sizetags-overinit",
+static cl::opt<bool> OptOverinit("deltatags-overinit",
         cl::desc("Add (allocsize - 1) initial offset to size tag"),
         cl::init(false));
 
-static cl::opt<bool> OptReplaceNull("sizetags-nullptr",
+static cl::opt<bool> OptReplaceNull("deltatags-nullptr",
         cl::desc("Instrument the NULL pointer with a size tag that always overflows on arith"),
         cl::init(true));
 
@@ -74,7 +74,7 @@ STATISTIC(NHeap,    "Number of tagged heap allocations");
 STATISTIC(NGlobal,  "Number of tagged globals");
 STATISTIC(NNullPtr, "Number of NULL pointer operands replaced");
 
-void SizeTagAlloc::getAnalysisUsage(AnalysisUsage &AU) const {
+void DeltaTagAlloc::getAnalysisUsage(AnalysisUsage &AU) const {
     AU.setPreservesCFG();
     AU.addPreserved<SafeAllocs>();
     AU.addPreserved<SafeAllocsOld>();
@@ -85,7 +85,7 @@ void SizeTagAlloc::getAnalysisUsage(AnalysisUsage &AU) const {
     AU.addUsedIfAvailable<SizeofTypes>();
 }
 
-bool SizeTagAlloc::instrumentGlobals(Module &M) {
+bool DeltaTagAlloc::instrumentGlobals(Module &M) {
     if (!OptGlobal)
         return false;
 
@@ -109,7 +109,7 @@ bool SizeTagAlloc::instrumentGlobals(Module &M) {
     return NGlobal > 0;
 }
 
-bool SizeTagAlloc::initializeModule(Module &M) {
+bool DeltaTagAlloc::initializeModule(Module &M) {
     DL = &M.getDataLayout();
     if (!(SafeAlloc = getAnalysisIfAvailable<SafeAllocs>()))
         SafeAlloc = getAnalysisIfAvailable<SafeAllocsOld>();
@@ -143,7 +143,7 @@ static Value *maskMallocWrapper(IRBuilder<> &B, AllocationSite &AS) {
  * all occurences of this value with the instrumented pointer. IRBuilder will
  * do const prop on size, often yielding a single `or` instruction.
  */
-void SizeTagAlloc::instrumentAllocation(AllocationSite &AS) {
+void DeltaTagAlloc::instrumentAllocation(AllocationSite &AS) {
     if (AS.isStackAllocation() && !OptStack)
         return;
 
@@ -183,7 +183,7 @@ void SizeTagAlloc::instrumentAllocation(AllocationSite &AS) {
     if (AS.isStackAllocation()) ++NStack; else ++NHeap;
 }
 
-bool SizeTagAlloc::runOnFunction(Function &F) {
+bool DeltaTagAlloc::runOnFunction(Function &F) {
     unsigned long long Nold = NStack + NHeap;
 
     for (Instruction &I : instructions(F)) {
@@ -212,7 +212,7 @@ bool SizeTagAlloc::runOnFunction(Function &F) {
     return NStack + NHeap > Nold;
 }
 
-uint64_t SizeTagAlloc::derefALignmentBytes(Type *Ty) {
+uint64_t DeltaTagAlloc::derefALignmentBytes(Type *Ty) {
     if (isa<ArrayType>(Ty) || isa<VectorType>(Ty))
         return derefALignmentBytes(cast<SequentialType>(Ty)->getElementType());
 
@@ -223,7 +223,7 @@ uint64_t SizeTagAlloc::derefALignmentBytes(Type *Ty) {
     return DL->getTypeStoreSize(Ty) - 1;
 }
 
-Type *SizeTagAlloc::getAllocatedElementType(AllocationSite &AS) {
+Type *DeltaTagAlloc::getAllocatedElementType(AllocationSite &AS) {
     // Stack allocations are trivial, the alloca encodes the type
     if (AS.isStackAllocation()) {
         Type *Ty = cast<AllocaInst>(AS.Allocation)->getAllocatedType();
@@ -273,7 +273,7 @@ Type *SizeTagAlloc::getAllocatedElementType(AllocationSite &AS) {
     return Type::getInt8Ty(AS.Allocation->getContext());
 }
 
-Constant *SizeTagAlloc::getNullPtr(PointerType *Ty) {
+Constant *DeltaTagAlloc::getNullPtr(PointerType *Ty) {
     IntegerType *IntTy = IntegerType::get(Ty->getContext(), PointerBits);
     ConstantInt *IntVal = ConstantInt::get(IntTy, BOUND_MASK_HIGH);
     return ConstantExpr::getIntToPtr(IntVal, Ty);

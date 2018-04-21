@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-#include "sizetags.h"
+#include "deltatags.h"
 #include "fault_handler.h"
 
 DEBUG_MODULE_NAME("test_nullptr");

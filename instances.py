@@ -76,11 +76,11 @@ class DeltaTags(infra.Instance):
         add_stats_pass(ctx, '-find-reinterpreted-pointers')
 
         # tag heap/stack/global allocations
-        add_stats_pass(ctx, '-size-tag-alloc',
+        add_stats_pass(ctx, '-delta-tag-alloc',
                 '-address-space-bits=%d' % self.addrspace_bits)
 
         # propagate size tags on ptr arith and libc calls
-        add_stats_pass(ctx, '-size-tag-prop',
+        add_stats_pass(ctx, '-delta-tag-prop',
                 '-check-ptr-arith-overflow=' + self.overflow_check)
 
         # mask pointers at dereferences / libcalls

@@ -46,7 +46,7 @@ void DebugNegArith::instrGep(GetElementPtrInst *Gep) {
         return;
     }
 
-    /* sizetags ignores vtable-related geps already */
+    /* deltatags ignores vtable-related geps already */
     Value *SrcPtr = Gep->getPointerOperand();
     if (SrcPtr->hasName() && SrcPtr->getName().startswith("vtable")) {
         NumVtableGeps++;

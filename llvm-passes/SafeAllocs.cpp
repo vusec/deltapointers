@@ -564,7 +564,7 @@ void SafeAllocs::preemptBoundChecks(Function &F) {
                         MaxGEP = GEP;
                 }
 
-                // Inform sizetagsprop pass to copy the offset of the maximum
+                // Inform deltatagsprop pass to copy the offset of the maximum
                 // GEP to the first dereferenced GEP
                 if (MaxGEP != CheckGEP) {
                     setPreemptedOffset(CheckGEP, MaxGEP);

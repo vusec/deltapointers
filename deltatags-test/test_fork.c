@@ -3,7 +3,7 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
-#include "sizetags.h"
+#include "deltatags.h"
 
 DEBUG_MODULE_NAME("test_fork");
 

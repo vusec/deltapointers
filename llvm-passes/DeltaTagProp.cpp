@@ -4,7 +4,7 @@
 #include <set>
 #include <map>
 
-#define DEBUG_TYPE "size-tag-prop"
+#define DEBUG_TYPE "delta-tag-prop"
 
 #include "utils/Common.h"
 #include "utils/CustomFunctionPass.h"
@@ -18,15 +18,15 @@ using namespace llvm;
 
 enum ArithCheckMode { nocheck, corrupt, branch };
 
-static cl::opt<bool> EnablePtrArith("sizetags-enable-ptr-arith",
+static cl::opt<bool> EnablePtrArith("deltatags-enable-ptr-arith",
         cl::desc("Enable pointer arithmetic propagation to metadata bits"),
         cl::init(true));
 
-static cl::opt<bool> EnableMemIntrinsics("sizetags-enable-mem-intrinsics",
+static cl::opt<bool> EnableMemIntrinsics("deltatags-enable-mem-intrinsics",
         cl::desc("Enable checks on memory intrinsics (e.g., memcpy)"),
         cl::init(true));
 
-static cl::opt<bool> SubtractionArith("sizetags-sub-arith",
+static cl::opt<bool> SubtractionArith("deltatags-sub-arith",
         cl::desc("Use pointer subtraction for non-constant pointer arithmetic propagation"),
         cl::init(false));
 
@@ -44,13 +44,13 @@ static cl::opt<bool> CheckPtrArithUnderflow("check-ptr-arith-underflow",
         cl::desc("Add runtime checks on zero metadata (implemented as cmov on x86) at negative GEPs to avoid underflows"),
         cl::init(true));
 
-static cl::opt<bool> DisallowUnalignedAccess("sizetags-no-unaligned",
+static cl::opt<bool> DisallowUnalignedAccess("deltatags-no-unaligned",
         cl::desc("Disallow unaligned access by adding (derefsize - 1) to the size tag before masking at dereference"),
         cl::init(false));
 
-struct SizeTagProp : public CustomFunctionPass {
+struct DeltaTagProp : public CustomFunctionPass {
     static char ID;
-    SizeTagProp() : CustomFunctionPass(ID) {}
+    DeltaTagProp() : CustomFunctionPass(ID) {}
 
     virtual void getAnalysisUsage(AnalysisUsage &AU) const;
 
@@ -83,9 +83,9 @@ private:
     bool initializeModule(Module &M) override;
 };
 
-char SizeTagProp::ID = 0;
-static RegisterPass<SizeTagProp> X("size-tag-prop",
-        "Propagate sizetags metadata to return values on stdlib functions");
+char DeltaTagProp::ID = 0;
+static RegisterPass<DeltaTagProp> X("delta-tag-prop",
+        "Propagate deltatags metadata to return values on stdlib functions");
 
 STATISTIC(NLibCall,                 "Number of libcalls instrumented: total");
 STATISTIC(NIgnore,                  "Number of libcalls instrumented: Ignore");
@@ -102,7 +102,7 @@ STATISTIC(NDynamicOverflowCheck,    "Number of ptr arith instrumented: overflow 
 STATISTIC(NMemIntrinsic,            "Number of memory intrinsics instrumented");
 STATISTIC(NMovedOffsets,            "Number of ptr arith offsets moved for preempted bound checks");
 
-void SizeTagProp::getAnalysisUsage(AnalysisUsage &AU) const {
+void DeltaTagProp::getAnalysisUsage(AnalysisUsage &AU) const {
     AU.addPreserved<SafeAllocs>();
     AU.addPreserved<SafeAllocsOld>();
     AU.addPreserved<ReinterpretedPointers>();
@@ -346,7 +346,7 @@ static inline unsigned getValueOpcode(Value *V) {
  * and is generally strlen + 1 unless NULL is passed to it.
  * Returns true if the IR has been modified.
  */
-bool SizeTagProp::propagatePtrMetadata(Instruction *I) {
+bool DeltaTagProp::propagatePtrMetadata(Instruction *I) {
     int arg;
 
     if (!isa<CallInst>(I) && !isa<InvokeInst>(I))
@@ -441,7 +441,7 @@ bool SizeTagProp::propagatePtrMetadata(Instruction *I) {
     return true;
 }
 
-bool SizeTagProp::isVtableGep(GetElementPtrInst *Gep) {
+bool DeltaTagProp::isVtableGep(GetElementPtrInst *Gep) {
     Value *SrcPtr = Gep->getPointerOperand();
     if (SrcPtr->hasName() && SrcPtr->getName().startswith("vtable")) {
         //DEBUG_LINE("Ignoring vtable GEP: " << *Gep);
@@ -482,7 +482,7 @@ static bool hasNonDereferencingUser(Value *Ptr, User *Ignore) {
 }
 #endif
 
-bool SizeTagProp::hasNegativeOffset(GetElementPtrInst *Gep) {
+bool DeltaTagProp::hasNegativeOffset(GetElementPtrInst *Gep) {
     // Negative offsets are trivial
     APInt ConstOffset(PointerBits, 0);
     if (Gep->accumulateConstantOffset(*DL, ConstOffset))
@@ -509,7 +509,7 @@ bool SizeTagProp::hasNegativeOffset(GetElementPtrInst *Gep) {
  * On pointer arithmetic, replicate the operations on the metadata in upper
  * bits.
  */
-bool SizeTagProp::instrumentPtrArith(GetElementPtrInst *Gep) {
+bool DeltaTagProp::instrumentPtrArith(GetElementPtrInst *Gep) {
     GetElementPtrInst *PreemptedGep = nullptr;
 
     if (SafeAlloc)
@@ -691,7 +691,7 @@ bool SizeTagProp::instrumentPtrArith(GetElementPtrInst *Gep) {
  * On dereference, add (derefsize - 1) to the size tag to avoid unaligned OoB
  * accesses,
  */
-bool SizeTagProp::instrumentDeref(Instruction *I) {
+bool DeltaTagProp::instrumentDeref(Instruction *I) {
     int PtrOperand = isa<LoadInst>(I) ? 0 : 1;
     Value *Ptr = I->getOperand(PtrOperand);
 
@@ -733,7 +733,7 @@ bool SizeTagProp::instrumentDeref(Instruction *I) {
     return true;
 }
 
-BasicBlock *SizeTagProp::getOrCreateErrorBlock(Function *F) {
+BasicBlock *DeltaTagProp::getOrCreateErrorBlock(Function *F) {
     auto it = ErrorBlocks.find(F);
     if (it != ErrorBlocks.end())
         return it->second;
@@ -754,7 +754,7 @@ BasicBlock *SizeTagProp::getOrCreateErrorBlock(Function *F) {
     return BB;
 }
 
-bool SizeTagProp::instrumentMemIntrinsic(Instruction *I) {
+bool DeltaTagProp::instrumentMemIntrinsic(Instruction *I) {
     IRBuilder<> B(I);
     IntegerType *PtrIntTy = getPtrIntTy(I->getContext());
 
@@ -801,7 +801,7 @@ bool SizeTagProp::instrumentMemIntrinsic(Instruction *I) {
     return true;
 }
 
-bool SizeTagProp::runOnFunction(Function &F) {
+bool DeltaTagProp::runOnFunction(Function &F) {
     bool Changed = false;
     SmallVector<GetElementPtrInst*, 8> Geps;
     SmallVector<Instruction*, 8> Derefs;
@@ -855,7 +855,7 @@ bool SizeTagProp::runOnFunction(Function &F) {
     return Changed;
 }
 
-bool SizeTagProp::initializeModule(Module &M) {
+bool DeltaTagProp::initializeModule(Module &M) {
     DL = &M.getDataLayout();
     StrBufSizeFunc = getNoInstrumentFunction(M, "strsize_nullsafe", false);
     NewStrtokFunc = getNoInstrumentFunction(M, "strtok", false);
@@ -871,7 +871,7 @@ bool SizeTagProp::initializeModule(Module &M) {
     return false;
 }
 
-bool SizeTagProp::moveUpOffsetInsts(GetElementPtrInst *CheckGEP,
+bool DeltaTagProp::moveUpOffsetInsts(GetElementPtrInst *CheckGEP,
                                     GetElementPtrInst *OffsetGEP,
                                     Instruction *InsertPt) {
     if (!DT->dominates(CheckGEP, OffsetGEP)) {
@@ -938,7 +938,7 @@ bool SizeTagProp::moveUpOffsetInsts(GetElementPtrInst *CheckGEP,
     return !MoveList.empty();
 }
 
-uint64_t SizeTagProp::getSmallestDerefSize(Value *Ptr) {
+uint64_t DeltaTagProp::getSmallestDerefSize(Value *Ptr) {
     uint64_t MinDerefSize = 0;
     bool Unmatching = false;
     assert(Ptr->getNumUses() > 0);

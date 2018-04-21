@@ -1,5 +1,5 @@
-#ifndef _SIZETAGS_H
-#define _SIZETAGS_H
+#ifndef _DELTATAGS_H
+#define _DELTATAGS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -74,4 +74,4 @@ __attribute__((noinline)) static size_t NOINSTRUMENT(ptr_get_size)(void *p) {
 }
 #endif
 
-#endif /* _SIZETAGS_H */
+#endif /* _DELTATAGS_H */
