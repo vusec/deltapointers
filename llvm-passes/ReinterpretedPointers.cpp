@@ -462,21 +462,26 @@ static Possibility loadsPointerAsInt(LoadInst *LI) {
     if (MDNode *TBAA = LI->getMetadata("tbaa")) {
         MDNode *TypeOp = cast<MDNode>(TBAA->getOperand(1));
         MDString *TypeName = cast<MDString>(TypeOp->getOperand(0));
-        if (TypeName->getString() == "any pointer")
-            return Yes;
-    } else {
-        // Find load [-> load] -> bitcast chain, return No if no chain found
-        while (LoadInst *NestedLI = dyn_cast<LoadInst>(LI->getPointerOperand()))
-            LI = NestedLI;
-
-        if (isa<BitCastOperator>(LI->getPointerOperand()))
-            return Maybe;
-
-        if (isa<IntToPtrInst>(LI->getPointerOperand()))
-            return Maybe;
+        return TypeName->getString() == "any pointer" ? Yes : No;
     }
 
+#if 0
+    // Find load [-> load] -> bitcast chain, return No if no chain found
+    while (LoadInst *NestedLI = dyn_cast<LoadInst>(LI->getPointerOperand()))
+        LI = NestedLI;
+
+    if (isa<BitCastOperator>(LI->getPointerOperand()))
+        return Maybe;
+
+    if (isa<IntToPtrInst>(LI->getPointerOperand()))
+        return Maybe;
+
     return No;
+#endif
+
+    // Don't just investigate load chains, other LLVM versions seem to emit
+    // single i64 loads that are actually pointers as well
+    return isPtrIntTy(LI->getType()) ? Maybe : No;
 }
 
 static bool isPtrVecTy(Type *Ty) {
