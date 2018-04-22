@@ -8,9 +8,9 @@ OBJDIR         ?= ./obj
 ADDRSPACE_BITS ?= 32
 
 CFLAGS += -DADDRSPACE_BITS=$(ADDRSPACE_BITS)
-ifeq ($(DISABLE_OPT),1)
-	CFLAGS += -O0
-	LDFLAGS += -O0
+ifeq ($(DEBUG),1)
+	CFLAGS += -O0 -g3
+	LDFLAGS += -O0 -g3
 else
 	CFLAGS += -O2
 	LDFLAGS += -O2

@@ -22,7 +22,7 @@ class DeltaTags(infra.Instance):
                 patches=llvm_patches, build_flags=doxygen_flags)
     llvm_passes = LLVMPasses(llvm, curdir + '/llvm-passes', 'deltatags',
                              use_builtins=True)
-    shrinkaddrspace = ShrinkAddrSpace(addrspace_bits,
+    shrinkaddrspace = ShrinkAddrSpace(addrspace_bits, debug=debug,
                                       srcdir=curdir + '/shrinkaddrspace')
     libdeltatags = LibDeltaTags(llvm_passes, addrspace_bits, overflow_bit=True,
                                 runtime_stats=False, debug=debug)
