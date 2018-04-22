@@ -168,6 +168,7 @@ static std::map<std::string, unsigned int> CopyFromArgList = {
     { "_ZNSolsEb", 0 },
     { "_ZNSolsEf", 0 },
     { "_ZNSolsEm", 0 },
+    { "_ZNSsaSERKSs", 0 },
     { "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE5eraseEmm", 0 },
     { "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE6appendERKS4_", 0 },
     { "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE6assignERKS4_mm", 0 },
@@ -177,6 +178,7 @@ static std::map<std::string, unsigned int> CopyFromArgList = {
     { "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEpLEc", 0 },
     { "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEEpLERKS4_", 0 },
     { "_ZSt7getlineIcSt11char_traitsIcESaIcEERSt13basic_istreamIT_T0_ES7_RNSt7__cxx1112basic_stringIS4_S5_T1_EE", 0 },
+    { "_ZStlsIcSt11char_traitsIcESaIcEERSt13basic_ostreamIT_T0_ES7_RKSbIS4_S5_T1_E", 0 },
     { "_ZStlsIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_St13_Setprecision", 0 },
     { "_ZStlsIcSt11char_traitsIcEERSt13basic_ostreamIT_T0_ES6_St5_Setw", 0 },
     { "_ZStlsIcSt11char_traitsIcESaIcEERSt13basic_ostreamIT_T0_ES7_RKNSt7__cxx1112basic_stringIS4_S5_T1_EE", 0 },
@@ -278,7 +280,13 @@ static std::set<std::string> IgnoreList = {
     "_ZNSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE9_M_createERmm", /* std::basic_string::_M_create */
 
     /* XXX */
-    "_ZNKSs5c_strEv", /* std::basic_string::c_str */
+    "_ZNKSs5c_strEv",           /* std::basic_string::c_str */
+    "_ZNKSs4dataEv",            /* std::basic_string::data */
+    "_ZNKSs5beginEv",           /* std::basic_string::begin */
+    "_ZNKSs3endEv",             /* std::basic_string::end */
+    "_ZNKSsixEm",               /* i8* (std::basic_string*, i64)* */
+    "_ZNSs12_S_empty_repEv",    /* ??? */
+    "_ZNSs4_Rep10_M_refdataEv", /* ??? */
 
     /* Added for dealII -O0 */
     "_ZNKSt7__cxx1112basic_stringIcSt11char_traitsIcESaIcEE3endEv",
