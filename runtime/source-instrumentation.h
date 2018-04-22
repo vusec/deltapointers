@@ -31,12 +31,12 @@ void *_ptr_arith(const void *ptr, int64_t delta);
 uintptr_t _leak_pointer(const void *ptr);
 uintptr_t _delta_tag(unsigned long long size);
 
-#ifdef DELTATAGS_UBOUND_BRANCH
+#ifdef DELTAPOINTERS_UBOUND_BRANCH
 # define UNSAFE_ARITH(ptr, delta) ({                                 \
         uintptr_t _tag = _tag_of(ptr);                               \
         _tag_pointer((char*)ptr + delta, _tag ? _tag + delta : 0UL); \
     })
-#elif defined(DELTATAGS)
+#elif defined(DELTAPOINTERS)
 # define UNSAFE_ARITH _ptr_arith
 #endif
 

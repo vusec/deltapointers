@@ -74,8 +74,10 @@ class LibDeltaTags(Package):
         # link static library
         ctx.ldflags += ['-L' + self.path(ctx, 'obj'), '-Wl,-whole-archive',
                         '-l:libdeltatags.a', '-Wl,-no-whole-archive']
-        ctx.cflags += ['-DDELTAPOINTERS', '-I' + self.path(ctx, 'src')]
-        ctx.cflags += self.llvm_passes.runtime_cflags(ctx)
+        cflags = ['-DDELTAPOINTERS', '-I' + self.path(ctx, 'src')]
+        cflags += self.llvm_passes.runtime_cflags(ctx)
+        ctx.cflags += cflags
+        ctx.cxxflags += cflags
 
         # pass overflow-bit option to instrumentation pass
         add_lto_args(ctx, '-overflow-bit=' + strbool(self.overflow_bit))
