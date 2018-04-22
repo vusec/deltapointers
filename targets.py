@@ -34,7 +34,7 @@ class DeltaTagsTest(Target):
             'CC': ctx.cc,
             'CXX': ctx.cxx,
             'CFLAGS': qjoin(ctx.cflags),
-            'CXXFLAGS': qjoin(ctx.cflags),
+            'CXXFLAGS': qjoin(ctx.cxxflags),
             'LDFLAGS': qjoin(ctx.ldflags)
         }
         return run(ctx, ['make', *args], env=env)
