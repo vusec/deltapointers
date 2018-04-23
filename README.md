@@ -55,9 +55,9 @@ instance):
   $ ./setup.py run --build deltatags-test clang-lto deltatags
 
 This will take a long time, so go get some coffee and plug in your laptop
-battery. The output should look somewhat like [this](TODO). For `clang-lto`,
-the tests that do a buffer overflow should fail because they expect an error to
-be raised. For `deltatags`, all test should succeed.
+battery. The output should look somewhat like [this](https://pastebin.com/raw/pviqa8CG).
+For `clang-lto`, the tests that do a buffer overflow should fail because they
+expect an error to be raised. For `deltatags`, all test should succeed.
 
 To run SPEC-CPU2006, you will need to provide your own copy of the source. You
 can do so by modifying `source` and `source_type` on the relevant lines in
