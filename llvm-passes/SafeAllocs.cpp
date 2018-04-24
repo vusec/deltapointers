@@ -377,8 +377,6 @@ void SafeAllocs::findSafeGEPs(Function &F,
         else {
             NSafeGEPsUnknown++;
         }
-
-        // TODO: microtest with struct { foo; buffer; } with memset on buffer
     }
 }
 

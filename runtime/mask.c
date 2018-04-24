@@ -36,6 +36,7 @@ ALWAYS_INLINE uintptr_t NOINSTRUMENT(mask_pointer_bzhi)(uintptr_t ptr, bool pres
 
 
 
+/* Alternative implementations of masking to test their performance. */
 #if 0
 ALWAYS_INLINE uintptr_t NOINSTRUMENT(mask_pointer)(uintptr_t ptr, bool preserve) {
     return ptr & (preserve ? PRESERVE_MASK : ADDRSPACE_MASK);

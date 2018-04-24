@@ -81,14 +81,20 @@ void CheckAddrSpace::checkPointerArgs(CallSite *CS) {
 
 /*
  * Mask pointers to external functions.
- * TODO: don't do this if we can determine it's not eg heap based.
  */
 void CheckAddrSpace::instrumentCallExt(CallSite *CS) {
     Function *F = CS->getCalledFunction();
-    if (CS->isInlineAsm())   /* XXX inline asm should actually be masked? */
+
+    /* XXX inline asm should actually be masked, but currently our tests rely on
+     * these semantics. For for instance nginx breaks with this. */
+    if (CS->isInlineAsm())
         return;
-    if (!F)                  /* XXX indirect calls? */
+
+    /* Indirect external calls are handled differently (wrapped in new function
+     * that does the masking) */
+    if (!F)
         return;
+
     if (!F->isDeclaration()) /* not external */
         return;
 
@@ -231,26 +237,6 @@ bool CheckAddrSpace::runOnFunction(Function &F) {
             instrumentPtrInt(&I);
         }
     }
-
-    /*
-    for (Argument &A : F.getArgumentList()) {
-        //if (isPtrIntWarn(&A)) {
-        if (isPtrIntTy(A.getType())) {
-            //errs() << F.getName() << " ptr arg: " << A << "\n";
-            for (User *U : A.users()) {
-                if (isa<IntToPtrInst>(U)) {
-                    errs() << F.getName() << ": arg " << A << " used as ptr:\n";
-                    errs() << *U << "\n";
-                }
-                else if (isa<CmpInst>(U)) {
-                    errs() << F.getName() << ": arg " << A << " used in cmp:\n";
-                    errs() << *U << "\n";
-                }
-            }
-            //instrumentPtrInt(&A);
-        }
-    }
-    */
 
     for (Instruction &I : instructions(F)) {
         if (isa<CallInst>(I) || isa<InvokeInst>(I)) {

@@ -646,25 +646,20 @@ bool DeltaTagProp::instrumentPtrArith(GetElementPtrInst *Gep) {
         switch (CheckOverflow) {
             /* Branch to trap code if the operation overflows */
             case branch: {
-                // FIXME: what was hasNonDereferencingUser for again?
-                //if (hasNonDereferencingUser(Gep, cast<User>(PtrInt))) {
-                    // Split on condition
-                    BasicBlock *BB = Gep->getParent();
-                    BasicBlock *Succ = BB->splitBasicBlock(B.GetInsertPoint(), Prefix + "fallthru");
+                // Split on condition
+                BasicBlock *BB = Gep->getParent();
+                BasicBlock *Succ = BB->splitBasicBlock(B.GetInsertPoint(), Prefix + "fallthru");
 
-                    // Replace unconditional jump with conditional branch
-                    BB->getTerminator()->eraseFromParent();
-                    B.SetInsertPoint(BB);
-                    B.CreateCondBr(NotNegativeAndOverflow, getOrCreateErrorBlock(BB->getParent()), Succ);
+                // Replace unconditional jump with conditional branch
+                BB->getTerminator()->eraseFromParent();
+                B.SetInsertPoint(BB);
+                B.CreateCondBr(NotNegativeAndOverflow, getOrCreateErrorBlock(BB->getParent()), Succ);
 
-                    // Reset insert point
-                    B.SetInsertPoint(&*Succ->begin());
+                // Reset insert point
+                B.SetInsertPoint(&*Succ->begin());
 
-                    PtrAdd = Result;
-                    break;
-                //}
-                // fall through to create select instruction if there is no
-                // non-dereferencing user
+                PtrAdd = Result;
+                break;
             }
             /* Nullify the result if the operation overflows */
             case satarith:
@@ -926,18 +921,6 @@ bool DeltaTagProp::moveUpOffsetInsts(GetElementPtrInst *CheckGEP,
                 Worklist.push_back(UI);
         }
     }
-
-    // Preserve order of occurrence
-    // TODO: remove this? not sure if it's useful
-    //std::sort(MoveList.begin(), MoveList.end(),
-    //        [&](Instruction *A, Instruction *B) -> int {
-    //            if (A == B)
-    //                return 0;
-    //            if (DT->dominates(A, B))
-    //                return 1;
-    //            assert(DT->dominates(B, A));
-    //            return -1;
-    //        });
 
     // Do the actual moving. The list is in reverse order, so move the
     // insertion point after every move.

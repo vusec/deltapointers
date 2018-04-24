@@ -10,18 +10,6 @@
 #include "ReinterpretedPointers.h"
 #include "SizeofTypes.h"
 
-/*
- * TODO:
- *  - custom mem allocators
- *  - saturation arith (look into x86_64 possibilities and perf)
- *  - ARM bench: better support imm64 and saturation arith (not for gpr?)
- *  - check amount of dyn ptr arith
- *  - check amount of negative ptr arith
- *  - check alloc sizes
- *
- *  null ptr derefs
- */
-
 using namespace llvm;
 
 struct DeltaTagAlloc : public CustomFunctionPass {
@@ -267,8 +255,6 @@ Type *DeltaTagAlloc::getAllocatedElementType(AllocationSite &AS) {
         if (Type *SizeofTy = SizeofAnalysis->getSizeofType(AS.Allocation))
             return SizeofTy;
     }
-
-    // TODO: C++ new
 
     return Type::getInt8Ty(AS.Allocation->getContext());
 }
