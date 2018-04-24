@@ -94,7 +94,8 @@ The source consists of several components:
     is the core of our work.
 
   - `runtime/` A runtime library containing helper functions called by our
-    instrumentation.
+    instrumentation. `dep.py` informs the setup script how to build the
+    runtime.
 
   - 'shrinkaddrspace/` A runtime library that shrinks the virtual address space
     of a process to an arbitrary number of bits, in order to accomodate larger
