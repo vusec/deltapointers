@@ -101,7 +101,7 @@ The source consists of several components:
     instrumentation. `dep.py` informs the setup script how to build the
     runtime.
 
-  - 'shrinkaddrspace/` A runtime library that shrinks the virtual address space
+  - `shrinkaddrspace/` A runtime library that shrinks the virtual address space
     of a process to an arbitrary number of bits, in order to accomodate larger
     delta tags (which is needed to support large object allocations). This
     standalone library is reused from an earlier project called Mid-Fat
