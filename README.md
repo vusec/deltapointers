@@ -31,22 +31,22 @@ library to plug these passes into existing build systems like that of SPEC.
 First, make sure the infrastructure is up-to-date (in case you did not so a
 recursive clone of this repo):
 
-  $ git submodule update --init
+    $ git submodule update --init
 
 The infrastructure's only hard dependency is Python 3.5. It downloads and
 builds most tools and libraries needed to build LLVM, but those in turn have
 some dependencies. On a clean Ubuntu 16.04 installation, this is what you need:
 
-  $ sudo apt-get install bison build-essential gettext git pkg-config python ssh
+    $ sudo apt-get install bison build-essential gettext git pkg-config python ssh
 
 For nicer command-line usage, install the following python packages (optional):
 
-  $ pip3 install --user coloredlogs argcomplete
+    $ pip3 install --user coloredlogs argcomplete
 
 `argcomplete` enables command-line argument completion, but it needs to be
 activated first (optional):
 
-  $ eval "$(register-python-argcomplete --complete-arguments -o nospace -o default -- setup.py)"
+    $ eval "$(register-python-argcomplete --complete-arguments -o nospace -o default -- setup.py)"
 
 Building/running benchmarks and dependencies is done with `setup.py` which
 knows about dependencies and build scripts. The following command builds all
@@ -54,7 +54,7 @@ dependencies, the Delta Pointers passes and runtime, and some small test
 programs. It then runs the test programs, both without (the `clang-lto` baseline
 instance) and with our instrumentation (the `deltatags` instance):
 
-  $ ./setup.py run --build deltatags-test clang-lto deltatags
+    $ ./setup.py run --build deltatags-test clang-lto deltatags
 
 This will take a long time, so go get some coffee and plug in your laptop
 battery. The output should look somewhat like [this](https://pastebin.com/raw/pviqa8CG).
@@ -68,7 +68,7 @@ can do so by modifying `source` and `source_type` on the relevant lines in
 details. After configuring `setup.py`, build and run the benchmark suite like
 this:
 
-  $ ./setup.py run --build spec2006 deltatags --test
+    $ ./setup.py run --build spec2006 deltatags --test
 
 This will build and run all 19 C/C++ benchmarks with Delta Pointers
 instrumentation, using the 'test' workload. To run the baseline, use
@@ -76,8 +76,8 @@ instrumentation, using the 'test' workload. To run the baseline, use
 directory `build/targets/spec2006/install`. For a complete list of run options,
 consult:
 
-  $ ./setup.py run --help
-  $ ./setup.py run spec2006 --help
+    $ ./setup.py run --help
+    $ ./setup.py run spec2006 --help
 
 
 Instrumenting your own program
