@@ -51,9 +51,8 @@ activated first (optional):
 Building/running benchmarks and dependencies is done with `setup.py` which
 knows about dependencies and build scripts. The following command builds all
 dependencies, the Delta Pointers passes and runtime, and some small test
-programs. It then runs the runs the test programs, both without (the
-`clang-lto` baseline instance) and with our instrumentation (the `deltatags`
-instance):
+programs. It then runs the test programs, both without (the `clang-lto` baseline
+instance) and with our instrumentation (the `deltatags` instance):
 
   $ ./setup.py run --build deltatags-test clang-lto deltatags
 
@@ -90,7 +89,7 @@ repository, or you can define your own *target*. See `target.py` for an
 example.
 
 
-Repo orginazation
+Repo organization
 =================
 
 The source consists of several components:
