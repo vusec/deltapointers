@@ -10,6 +10,12 @@
 
 #define DEBUG_TYPE "safe-allocs"
 
+/*
+ * This is an experimental/unfinished implementiaton of optimizations based on
+ * Scalar Evolution (SCEV). It is not actually used by default, but can be
+ * enabled by modifying instances.py.
+ */
+
 #include "utils/Common.h"
 #include "utils/CustomFunctionPass.h"
 #include "utils/Allocation.h"
