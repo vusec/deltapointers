@@ -24,8 +24,6 @@ This way, out-of-bounds pointers are automatically rejected by the hardware.
 Building and running instrumented programs
 ==========================================
 
-TODO: prerequisites
-
 This repository only contains code for LLVM passes and a small runtime library.
 We use an external [infrastructure](https://github.com/vusec/instrumentation-infra)
 library to plug these passes into existing build systems like that of SPEC.
@@ -35,8 +33,13 @@ recursive clone of this repo):
 
   $ git submodule update --init
 
-The infrastructure's only hard dependency is Python 3.5. For nicer command-line
-usage, install the following python packages (optional):
+The infrastructure's only hard dependency is Python 3.5. It downloads and
+builds most tools and libraries needed to build LLVM, but those in turn have
+some dependencies. On a clean Ubuntu 16.04 installation, this is what you need:
+
+  $ sudo apt-get install bison build-essential gettext git pkg-config python ssh
+
+For nicer command-line usage, install the following python packages (optional):
 
   $ pip3 install --user coloredlogs argcomplete
 
@@ -61,8 +64,10 @@ expect an error to be raised. For `deltatags`, all test should succeed.
 
 To run SPEC-CPU2006, you will need to provide your own copy of the source. You
 can do so by modifying `source` and `source_type` on the relevant lines in
-`setup.py`. See the relevant [documentation](TODO) for details. After
-configuring `setup.py`, build and run the benchmark suite like this:
+`setup.py`. See the relevant
+[documentation](https://github.com/vusec/instrumentation-infra/README.md) for
+details. After configuring `setup.py`, build and run the benchmark suite like
+this:
 
   $ ./setup.py run --build spec2006 deltatags --test
 
