@@ -1,3 +1,3 @@
 [submodule "infra"]
 	path = infra
-	url = https://github.com/vusec/instrumentation-infra.git
+	url = git@github.com:vusec/instrumentation-infra.git
