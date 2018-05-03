@@ -22,11 +22,8 @@ for name in ('gcc', 'perlbench', 'soplex', 'h264ref-sizetagprop-BCBP'):
     patches.append('%s/patches/spec2006-%s.patch' % (curdir, name))
 
 setup.add_target(infra.targets.SPEC2006(
-    # see the following link for more options for source[_type] below:
-    # https://github.com/vusec/instrumentation-infra/blob/196171a4fd3a67fd57ef04fda9517bdbcada5256/targets/spec2006/__init__.py#L26
-    source='your-git-url', # SET THIS FOR SPEC
-    source_type='git',     # SET THIS FOR SPEC
-    patches=patches
+    source='git@bitbucket.org:vusec/spec-cpu2006-cd.git',
+    source_type='git', patches=patches
 ))
 
 if __name__ == '__main__':
