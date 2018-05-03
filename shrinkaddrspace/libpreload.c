@@ -28,38 +28,6 @@
 static main_t orig_main;
 uintptr_t oldstackptr;
 
-
-/******************************************************************************/
-/* sizetags specific fixes                                                    */
-/******************************************************************************/
-
-int running_in_small_addr_space = 0;
-
-/* Fix gcc calling a funcptr stored in splay-tree cmp func. Taken from musl. */
-#ifdef strcmp
-#undef strcmp
-#endif
-#define PTR_MASK (0xffffffffULL | (1ULL<<63))
-int strcmp_unmasked(const char *l, const char *r)
-{
-    for (; *l==*r && *l; l++, r++);
-    return *(unsigned char *)l - *(unsigned char *)r;
-}
-int strcmp(const char *l, const char *r)
-{
-    const char *ml = (const char *)(((uintptr_t)l) & PTR_MASK);
-    const char *mr = (const char *)(((uintptr_t)r) & PTR_MASK);
-    if (running_in_small_addr_space)
-        return strcmp_unmasked(ml, mr);
-    else
-        return strcmp_unmasked(l, r);
-}
-
-/******************************************************************************/
-/* End of sizetags specific code                                              */
-/******************************************************************************/
-
-
 /*
  * Called with new stack, before program main entry, so here we can safely unmap
  * the old stack.
@@ -74,8 +42,6 @@ int new_main(int argc, char **argv, char **envp)
     unmap_old_stack(oldstackptr);
     create_new_tls();
     setup_debug_sighandlers();
-
-    running_in_small_addr_space = 1;
 
     return orig_main(argc, argv, envp);
 }
