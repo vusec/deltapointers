@@ -9,27 +9,14 @@ extern "C" {
 #include <stdio.h>
 #include <stdint.h>
 
-#include "noinstrument.h" // from $PATHROOT/lib
+#include "noinstrument.h"   /* for NOINSTRUMENT macro */
+#include "dump-ir-helper.h" /* for DEBUG_MODULE_NAME macro */
 
 // Uncommente if testing ubound-branch pass
 //#define TESTING_UBOUND_BRANCH
 
 #define ADDRSPACE_BITS 32
 #define ADDRSPACE_MASK ((1ULL << ADDRSPACE_BITS) - 1)
-
-/* For DumpIR pass output. */
-/* XXX could also use __FILE__? */
-#ifdef __cplusplus
-#define DEBUG_MODULE_NAME(n) \
-    extern "C" { \
-        __attribute__((used)) \
-        static const char NOINSTRUMENT(DEBUG_MODULE_NAME)[] = (n); \
-    }
-#else
-#define DEBUG_MODULE_NAME(n) \
-    __attribute__((used)) \
-    static const char NOINSTRUMENT(DEBUG_MODULE_NAME)[] = (n);
-#endif
 
 /* assert doesn't work properly with shrinkaddrspace (has ptr to old stack in
  * __assert_fail_base()).
