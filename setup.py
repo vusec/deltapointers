@@ -27,9 +27,9 @@ for name in ('gcc', 'perlbench', 'soplex', 'h264ref-sizetagprop-BCBP'):
 
 setup.add_target(infra.targets.SPEC2006(
     # see the following link for more options for source[_type] below:
-    # https://github.com/vusec/instrumentation-infra/blob/196171a4fd3a67fd57ef04fda9517bdbcada5256/targets/spec2006/__init__.py#L26
-    source='your-git-url', # SET THIS FOR SPEC
-    source_type='git',     # SET THIS FOR SPEC
+    # http://instrumentation-infra.readthedocs.io/en/master/targets.html#infra.targets.SPEC2006
+    source='spec-mount-dir', # SET THIS FOR SPEC
+    source_type='mounted',   # SET THIS FOR SPEC
     patches=patches
 ))
 
