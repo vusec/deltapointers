@@ -2,7 +2,7 @@ import os
 import argparse
 from infra import Target
 from infra.util import run, qjoin
-from instances import DeltaTags
+from .instances import DeltaTags
 
 
 class DeltaTagsTest(Target):
@@ -15,7 +15,7 @@ class DeltaTagsTest(Target):
         return os.path.exists('src')
 
     def fetch(self, ctx):
-        os.symlink(os.path.join(ctx.paths.root, self.name), 'src')
+        os.symlink(os.path.join(ctx.paths.root, 'deltatags-test'), 'src')
 
     def build(self, ctx, instance):
         self.run_make(ctx, instance, '--always-make')
