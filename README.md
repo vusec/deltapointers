@@ -17,8 +17,7 @@ is managed efficiently by arithmetic operations, without the use of any
 additional branches or memory accesses. Upon dereference, the distance is taken
 out of the pointer using a bitwise AND operation, but the overflow bit is left
 intact. When set, this bit will cause the dereferenced pointer to become
-*non-canonical*, in turn causing a general protection fault in the processor.
-This way, out-of-bounds pointers are automatically rejected by the hardware.
+*non-canonical*, in turn causing a general protection fault in the processor.  This way, out-of-bounds pointers are automatically rejected by the hardware.
 
 
 Building and running instrumented programs
@@ -105,8 +104,8 @@ The source consists of several components:
     compatible with tagged pointers.
 
   - `deltatags-test` A collection of toy programs that test different parts of
-    the Delta Pointers implementation. `targets.py` informs the setup script
-    how to build/run these programs.
+    the Delta Pointers implementation. `config/targets.py` informs the setup
+    script how to build/run these programs.
 
   - `infra` An external repository that facilitates program instrumentation for
     common benchmarks in systems research (developed in conjunction with Delta
@@ -116,6 +115,6 @@ The source consists of several components:
     register new benchmarks (or 'targets') and hook in any custom passes of
     your own. The script has descriptive usage messages for all subcommands.
 
-  - `instances.py` informs the setup script how to build programs with Delta
-    Pointers instrumentation. If you want to add custom instrumentation passes,
-    this is the place to do it.
+  - `config/instances.py` informs the setup script how to build programs with
+    Delta Pointers instrumentation. If you want to add custom instrumentation
+    passes, this is the place to do it.

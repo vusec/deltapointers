@@ -6,8 +6,8 @@ curdir = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(curdir, 'infra'))
 
 import infra
-from instances import DeltaTags
-from targets import DeltaTagsTest
+from config.instances import DeltaTags
+from config.targets import DeltaTagsTest
 
 setup = infra.Setup(__file__)
 

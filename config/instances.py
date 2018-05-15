@@ -1,7 +1,7 @@
 import os.path
 import infra
 from infra.packages import LLVM, BuiltinLLVMPasses, LLVMPasses, LibShrink
-from deps import LibDeltaTags
+from .packages import LibDeltaTags
 
 
 class DeltaTags(infra.Instance):
@@ -10,15 +10,15 @@ class DeltaTags(infra.Instance):
     llvm_patches = ['gold-plugins', 'statsfilter']
     debug = False # toggle for debug symbols
 
-    curdir = os.path.dirname(os.path.abspath(__file__))
+    rootdir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     doxygen_flags = [
         #'-DLLVM_ENABLE_DOXYGEN=On',
         #'-DLLVM_DOXYGEN_SVG=On',
-        #'-DLLVM_INSTALL_DOXYGEN_HTML_DIR=%s/build/doxygen' % curdir
+        #'-DLLVM_INSTALL_DOXYGEN_HTML_DIR=%s/build/doxygen' % rootdir
     ]
     llvm = LLVM(version=llvm_version, compiler_rt=False,
                 patches=llvm_patches, build_flags=doxygen_flags)
-    llvm_passes = LLVMPasses(llvm, curdir + '/llvm-passes', 'deltatags',
+    llvm_passes = LLVMPasses(llvm, rootdir + '/llvm-passes', 'deltatags',
                              use_builtins=True)
     libshrink = LibShrink(addrspace_bits, debug=debug)
     libdeltatags = LibDeltaTags(llvm_passes, addrspace_bits, overflow_bit=True,
