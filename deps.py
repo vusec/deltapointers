@@ -1,8 +1,7 @@
 import os
 from infra import Package
-from infra.packages import ShrinkAddrSpace
+from infra.packages import LibShrink, LLVM
 from infra.util import run
-from infra.instances.helpers.llvm_lto import add_lto_args
 
 
 def strbool(b):
@@ -21,8 +20,7 @@ class LibDeltaTags(Package):
     def dependencies(self):
         yield self.llvm_passes.llvm
         curdir = os.path.dirname(os.path.abspath(__file__))
-        yield ShrinkAddrSpace(self.addrspace_bits,
-                              srcdir=curdir + '/shrinkaddrspace')
+        yield LibShrink(self.addrspace_bits)
 
     def ident(self):
         return 'libdeltatags-%d%s' % (self.addrspace_bits,
@@ -80,4 +78,4 @@ class LibDeltaTags(Package):
         ctx.cxxflags += cflags
 
         # pass overflow-bit option to instrumentation pass
-        add_lto_args(ctx, '-overflow-bit=' + strbool(self.overflow_bit))
+        LLVM.add_plugin_flags(ctx, '-overflow-bit=' + strbool(self.overflow_bit))

@@ -1,8 +1,6 @@
 import os.path
 import infra
-from infra.packages import LLVM, BuiltinLLVMPasses, LLVMPasses, ShrinkAddrSpace
-from infra.instances.helpers.llvm_lto import add_lto_args, add_stats_pass
-#from infra.packages.llvm.helpers import add_lto_args, add_stats_pass
+from infra.packages import LLVM, BuiltinLLVMPasses, LLVMPasses, LibShrink
 from deps import LibDeltaTags
 
 
@@ -22,8 +20,7 @@ class DeltaTags(infra.Instance):
                 patches=llvm_patches, build_flags=doxygen_flags)
     llvm_passes = LLVMPasses(llvm, curdir + '/llvm-passes', 'deltatags',
                              use_builtins=True)
-    shrinkaddrspace = ShrinkAddrSpace(addrspace_bits, debug=debug,
-                                      srcdir=curdir + '/shrinkaddrspace')
+    libshrink = LibShrink(addrspace_bits, debug=debug)
     libdeltatags = LibDeltaTags(llvm_passes, addrspace_bits, overflow_bit=True,
                                 runtime_stats=False, debug=debug)
 
@@ -35,20 +32,20 @@ class DeltaTags(infra.Instance):
     def dependencies(self):
         yield self.llvm
         yield self.llvm_passes
-        yield self.shrinkaddrspace
+        yield self.libshrink
         yield self.libdeltatags
 
     def configure(self, ctx):
         # helper libraries
         self.llvm.configure(ctx)
         self.llvm_passes.configure(ctx)
-        self.shrinkaddrspace.configure(ctx, static=True)
+        self.libshrink.configure(ctx, static=True)
         self.libdeltatags.configure(ctx)
 
         if self.debug:
             ctx.cflags += ['-O0', '-ggdb']
             ctx.cxxflags += ['-O0', '-ggdb']
-            add_lto_args(ctx, '-disable-opt')
+            LLVM.add_plugin_flags(ctx, '-disable-opt')
         else:
             # note: link-time optimizations break some programs (perlbench,
             # gcc) if our instrumentation runs and -O2 was not passed at
@@ -56,50 +53,53 @@ class DeltaTags(infra.Instance):
             ctx.cflags += ['-O2']
             ctx.cxxflags += ['-O2']
 
+        def add_stats_pass(name, *args):
+            LLVM.add_plugin_flags(ctx, name, '-stats-only=' + name, *args)
+
         # prepare initalizations of globals so that the next passes only have to
         # operate on instructions (rather than constantexprs)
-        add_stats_pass(ctx, '-defer-global-init')
-        add_stats_pass(ctx, '-expand-const-global-users')
+        add_stats_pass('-defer-global-init')
+        add_stats_pass('-expand-const-global-users')
 
         # make sure all calls to allocation functions are direct
-        add_stats_pass(ctx, '-replace-address-taken-malloc')
+        add_stats_pass('-replace-address-taken-malloc')
 
         # do some analysis for optimizations
         if self.optimizer == 'old':
-            add_stats_pass(ctx, '-safe-allocs-old')
+            add_stats_pass('-safe-allocs-old')
         elif self.optimizer == 'new':
             # simplify loops to ease analysis
-            add_lto_args(ctx, '-loop-simplify')
-            add_stats_pass(ctx, '-safe-allocs')
+            LLVM.add_plugin_flags(ctx, '-loop-simplify')
+            add_stats_pass('-safe-allocs')
 
         # find integers that contain pointer values and thus need to be masked
-        add_stats_pass(ctx, '-find-reinterpreted-pointers')
+        add_stats_pass('-find-reinterpreted-pointers')
 
         # tag heap/stack/global allocations
-        add_stats_pass(ctx, '-deltatags-alloc',
-                '-address-space-bits=%d' % self.addrspace_bits)
+        add_stats_pass('-deltatags-alloc',
+                       '-address-space-bits=%d' % self.addrspace_bits)
 
         # propagate size tags on ptr arith and libc calls
-        add_stats_pass(ctx, '-deltatags-prop',
-                '-deltatags-check-overflow=' + self.overflow_check)
+        add_stats_pass('-deltatags-prop',
+                       '-deltatags-check-overflow=' + self.overflow_check)
 
         # mask pointers at dereferences / libcalls
-        add_stats_pass(ctx, '-mask-pointers',
-                '-mask-pointers-ignore-list=strtok')
+        add_stats_pass('-mask-pointers',
+                       '-mask-pointers-ignore-list=strtok')
 
         # undo loop simplification changes
         if self.optimizer == 'new':
-            add_lto_args(ctx, '-simplifycfg')
+            LLVM.add_plugin_flags(ctx, '-simplifycfg')
 
         # dump IR for debugging
-        add_lto_args(ctx, '-dump-ir')
+        LLVM.add_plugin_flags(ctx, '-dump-ir')
 
         # inline statically linked helpers
-        add_lto_args(ctx, '-custominline')
+        LLVM.add_plugin_flags(ctx, '-custominline')
 
     def prepare_run(self, ctx):
         assert 'target_run_wrapper' not in ctx
-        ctx.target_run_wrapper = self.shrinkaddrspace.run_wrapper(ctx)
+        ctx.target_run_wrapper = self.libshrink.run_wrapper(ctx)
 
     @classmethod
     def make_instances(cls):

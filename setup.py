@@ -1,6 +1,10 @@
 #!/usr/bin/env python3
 # PYTHON_ARGCOMPLETE_OK
+import sys
 import os.path
+curdir = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(curdir, 'infra'))
+
 import infra
 from instances import DeltaTags
 from targets import DeltaTagsTest
