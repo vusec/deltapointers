@@ -14,7 +14,7 @@
 #include <llvm/Analysis/ScalarEvolution.h>
 #include <llvm/Transforms/Utils/LoopUtils.h>
 
-#include "utils/Allocation.h"
+#include "builtin/Allocation.h"
 
 using namespace llvm;
 

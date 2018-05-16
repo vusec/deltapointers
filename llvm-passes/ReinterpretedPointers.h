@@ -7,7 +7,7 @@
 #include <llvm/ADT/DenseMap.h>
 #include <llvm/ADT/TinyPtrVector.h>
 
-#include "utils/CustomFunctionPass.h"
+#include "builtin/CustomFunctionPass.h"
 
 using namespace llvm;
 

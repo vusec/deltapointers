@@ -8,8 +8,8 @@
 
 #define DEBUG_TYPE "replace-address-taken-malloc"
 
-#include "utils/Common.h"
-#include "utils/Allocation.h"
+#include "builtin/Common.h"
+#include "builtin/Allocation.h"
 
 using namespace llvm;
 
