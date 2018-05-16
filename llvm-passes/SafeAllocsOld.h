@@ -13,7 +13,7 @@
 #include <llvm/Analysis/ScalarEvolution.h>
 #include <llvm/Analysis/ScalarEvolutionExpander.h>
 
-#include "utils/Allocation.h"
+#include "builtin/Allocation.h"
 #include "SafeAllocs.h"
 
 using namespace llvm;

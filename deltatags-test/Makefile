@@ -20,7 +20,7 @@ BINS         := $(patsubst %.c,$(BINDIR)/%,$(SRCS_C)) $(patsubst %.cpp,$(BINDIR)
 
 LLVM_VERSION := 3.8.0
 PKG_CONFIG   := python3 ../setup.py pkg-config
-INCLUDES      = `$(PKG_CONFIG) llvm-passes-builtin-$(LLVM_VERSION) --target-cflags`
+INCLUDES      = `$(PKG_CONFIG) llvm-passes-builtin-$(LLVM_VERSION) --runtime-cflags`
 CFLAGS       += -g -O0
 CXXFLAGS     := $(CFLAGS) -std=c++11
 

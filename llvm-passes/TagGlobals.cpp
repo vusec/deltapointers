@@ -1,6 +1,6 @@
 #define DEBUG_TYPE "tag-globals"
 
-#include "utils/Common.h"
+#include "builtin/Common.h"
 #include "AddressSpace.h"
 
 using namespace llvm;

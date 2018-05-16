@@ -2,8 +2,8 @@
 
 #define DEBUG_TYPE "mask-pointers"
 
-#include "utils/Common.h"
-#include "utils/CustomFunctionPass.h"
+#include "builtin/Common.h"
+#include "builtin/CustomFunctionPass.h"
 #include "AddressSpace.h"
 #include "GlobalOpt.h"
 #include "SafeAllocs.h"

@@ -7,9 +7,9 @@
 
 #define DEBUG_TYPE "safe-allocs-old"
 
-#include "utils/Common.h"
-#include "utils/CustomFunctionPass.h"
-#include "utils/Allocation.h"
+#include "builtin/Common.h"
+#include "builtin/CustomFunctionPass.h"
+#include "builtin/Allocation.h"
 #include "AddressSpace.h"
 #include "TagGlobalsConst.h"
 #include "SafeAllocsOld.h"

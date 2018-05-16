@@ -1,6 +1,6 @@
 #define DEBUG_TYPE "find-reinterpreted-pointers"
 
-#include "utils/Common.h"
+#include "builtin/Common.h"
 #include "AddressSpace.h"
 #include "ReinterpretedPointers.h"
 

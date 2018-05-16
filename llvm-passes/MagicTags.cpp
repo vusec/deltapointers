@@ -1,9 +1,9 @@
 #define DEBUG_TYPE "magic-tags"
 
-#include "utils/Common.h"
-#include "utils/CustomFunctionPass.h"
+#include "builtin/Common.h"
+#include "builtin/CustomFunctionPass.h"
 #include "AddressSpace.h"
-#include "utils/Allocation.h"
+#include "builtin/Allocation.h"
 #include "TagGlobalsConst.h"
 
 using namespace llvm;

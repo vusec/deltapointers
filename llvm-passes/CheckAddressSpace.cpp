@@ -9,8 +9,8 @@
 
 #define DEBUG_TYPE "check-address-space"
 
-#include "utils/Common.h"
-#include "utils/CustomFunctionPass.h"
+#include "builtin/Common.h"
+#include "builtin/CustomFunctionPass.h"
 #include "AddressSpace.h"
 #include "SafeAllocs.h"
 #include "SafeAllocsOld.h"

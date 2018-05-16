@@ -2,8 +2,8 @@
 
 #define DEBUG_TYPE "debugnegarith"
 
-#include "utils/Common.h"
-#include "utils/CustomFunctionPass.h"
+#include "builtin/Common.h"
+#include "builtin/CustomFunctionPass.h"
 
 using namespace llvm;
 
