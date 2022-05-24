@@ -49,3 +49,15 @@ char *NOINSTRUMENT(strtok_ubound)(char *str, const char *delim) {
 
     return (char*)(strtok_ret | endptr);
 }
+
+/* Fix program taking the address of strcmp and calling it indirectly later.
+ * In particular, fixes 403.gcc's splay-tree cmp func.
+ * Taken from musl. */
+#ifdef strcmp
+#undef strcmp
+#endif
+int strcmp(const char *l, const char *r)
+{
+        for (; *l==*r && *l; l++, r++);
+            return *(unsigned char *)l - *(unsigned char *)r;
+}
